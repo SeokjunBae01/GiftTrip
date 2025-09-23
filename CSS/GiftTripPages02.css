@@ -1,0 +1,115 @@
+/* 🎨 색상 및 공통 변수 */
+:root {
+  --brand: #6dd6cf;
+  --line: #e5e7eb;
+  --muted: #94a3b8;
+  --text: #222;
+  --bg: #fff;
+}
+
+/* 페이지 2 전체 래퍼 */
+.pg02 {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* 헤더 */
+.pg02 .header {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pg02 .logo {
+  font-weight: 800;
+  font-size: 44px;
+  color: var(--brand);
+  letter-spacing: 0.3px;
+}
+
+.pg02 .login {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+/* 카드 */
+.pg02 .card {
+  max-width: 680px;
+  margin: 40px auto 0;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
+}
+
+.pg02 .subtle {
+  text-align: center;
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 16px;
+}
+
+/* 입력 영역 */
+.pg02 .label {
+  display: block;
+  font-weight: 600;
+  margin: 8px 0;
+}
+
+.pg02 .input {
+  width: 95%;
+  padding: 14px 16px;
+  border-radius: 16px;
+  font-size: 16px;
+  border: 1px solid var(--line);
+  background: #f3f4f6;
+  outline: none;
+  resize: none;
+}
+
+.pg02 .input:focus {
+  border-color: #bfe9e5;
+  box-shadow: 0 0 0 3px rgba(109, 214, 207, 0.15);
+}
+
+.pg02 .hint {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* 액션 */
+.pg02 .actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.pg02 .cta {
+  padding: 12px 22px;
+  border-radius: 16px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.pg02 .cta:active {
+  transform: translateY(1px);
+}
+
+.pg02 .progress {
+  margin-top: 10px;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+}
