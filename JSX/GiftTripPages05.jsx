@@ -1,4 +1,4 @@
-import "./CSS/GiftTripPages04.css";
+import "./CSS/GiftTripPages05.css";
 
 export default function PageFour() {
   const imageSrc = "https://picsum.photos/800/500";
