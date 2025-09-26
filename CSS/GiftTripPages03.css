@@ -1,0 +1,142 @@
+/* 🎨 색상 및 공통 변수 */
+:root {
+  --brand: #6dd6cf;
+  --line: #e5e7eb;
+  --muted: #94a3b8;
+  --text: #222;
+  --bg: #fff;
+}
+
+/* 페이지 3 전체 래퍼 */
+.pg03 {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+}
+
+/* 헤더 */
+.pg03 .header {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pg03 .logo {
+  font-weight: 800;
+  font-size: 44px;
+  color: var(--brand);
+  letter-spacing: 0.3px;
+}
+
+.pg03 .login {
+  padding: 10px 16px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+
+/* 본문 컨텐츠 */
+.pg03 .content {
+  max-width: 960px;
+  margin: 24px auto 0;
+  padding: 0 24px 80px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.pg03 .title {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 32px 0 8px;
+  text-align: center;
+}
+
+/* 도시 이름 (배지 스타일) */
+.pg03 .city-label {
+  padding: 14px 32px;
+  background: #f8eedd;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+/* 유튜브 링크 안내 문구 */
+.pg03 .yt-link {
+  margin-top: 6px;
+  color: var(--muted);
+  text-align: center;
+  text-decoration: none;
+}
+.pg03 .yt-link:hover {
+  text-decoration: underline;
+}
+
+/* LLM 여행 타입 요약 텍스트 */
+.pg03 .type-summary {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 10px;
+  background: #d9d9d9;
+  color: #333;
+  padding: 10px 14px;
+  line-height: 1.4;
+}
+
+/* 여행 타입 / 해시태그 */
+.pg03 .type {
+  width: 100%;
+  margin-top: 6px;
+}
+.pg03 .type-label {
+  display: inline-block;
+  margin-right: 12px;
+  font-weight: 500;
+}
+.pg03 .type-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  vertical-align: middle;
+}
+.pg03 .tag {
+  display: inline-block;
+  padding: 8px 14px;
+  background: #f8eedd;
+  border-radius: 20px;
+  font-size: 14px;
+}
+
+/* 하단 CTA 버튼 */
+.pg03 .actions {
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 40px;
+}
+.pg03 .btn {
+  border: none;
+  border-radius: 20px;
+  padding: 18px 26px;
+  font-size: 18px;
+  cursor: pointer;
+  box-shadow: 0 6px 18px rgba(0,0,0,.06);
+}
+.pg03 .btn.primary { background: var(--brand); color: #222; }
+.pg03 .btn.primary:hover { filter: brightness(0.98); }
+.pg03 .btn.secondary { background: #e9e9e9; color: #222; }
+
+@media (max-width: 680px) {
+  .pg03 .content { padding: 0 16px 80px; }
+  .pg03 .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .pg03 .btn { width: 100%; }
+}
