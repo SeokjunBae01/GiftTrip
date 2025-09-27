@@ -1,0 +1,52 @@
+/* 
+숙박, 액티비티, 음식, 인기스팟 
+Text 무게 및 배경 색 관리
+*/
+.Page04_TitleFrame {
+  background: #f0f0f0;
+  font-weight: 600;
+}
+
+/* 
+시작하기
+Text 무게, Text 색, 배경 색 관리
+*/
+.Page04_ActionFrame {
+  background: #35cfd3;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer; /* 마우스 가져다 댔을 때 손모양 나오기 */
+}
+
+/* 중앙 4개 썸네일 공통 크기 관리 */
+.Page04_Main {
+  max-width: 1360px;
+  margin: 120px auto 0;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 35px;
+}
+
+/* 중앙 썸네일이랑 타이틀 + 액션 버튼 사이간 수치 조정 */
+.Page04_Card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+/* 회색 박스(썸네일 자리) */
+.Page04_Thumbnail {
+  width: 320px;
+  height: 280px;
+  background: #e6e6e6;
+  border-radius: 10px;
+}
+
+/* 맨 아래 문구 */
+.Pages04_Footer {
+  margin-top: 10%;
+  text-align: center;
+  color: #7a7a7a;
+  font-size: 14px;
+}
