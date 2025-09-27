@@ -1,91 +1,53 @@
-.pg2.page {
-  min-height: 100vh;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-}
-
-/* Header */
-.pg2 .header {
-  position: relative;
-  padding: 16px 32px;
-}
-.pg2 .logo {
-  margin: 0;
-  font-size: 48px;
-  font-weight: 800;
-  color: turquoise;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-.pg2 .loginBtn {
-  position: absolute;
-  right: 32px;
-  top: 48px;
-  transform: translateY(-50%);
-  background: #eee;
-  border: none;
-  border-radius: 16px;
-  padding: 10px 18px;
-  cursor: pointer;
-}
-
-/* Main 2 columns */
-.pg2 .main {
-  flex: 1;
+.Page05_Main{
+  margin-top: 100px;
   display: grid;
-  grid-template-columns: 1fr 320px;
-  gap: 32px;
-  align-items: center;
-  justify-items: center;
-  padding: 40px 48px 0;
-}
-.pg2 .leftCol {
-  width: 100%;
-  display: grid;
-  justify-items: center;      /* ✅ grid에서 가운데 정렬 */
   gap: 18px;
 }
-.pg2 .imageWrap {
-  width: 640px;
-  height: 360px;
-  border-radius: 28px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0,0,0,.15);
-}
-.pg2 .image {
-  width: 100%;
-  height: 100%;
+
+.Page05_MainImage {
+  width: 540px;
+  height: 300px;
   object-fit: cover;
   display: block;
-  
+  border-radius: 15px;
 }
-.pg2 .actions {
+
+.Page05_Action{
   display: flex;
-  gap: 16px;
+  gap: 100px;
+  justify-content: center; /* 버튼들을 수평 중앙 */
 }
-.pg2 .btn {
-  min-width: 120px;
-  height: 44px;
-  padding: 0 16px;
-  border-radius: 12px;
-  border: 1px solid #2f2f2f;
-  background: #eef9fb;
+
+.Page05_BtnLike{
+  padding: 8px 36px;
+  background: #72ff6e; 
   cursor: pointer;
-  box-shadow: 0 3px 6px rgba(0,0,0,.15);
-  font-size: 16px;
 }
-.pg2 .btnLike { background: #e6f7f7; }
-.pg2 .btnDislike { background: #f6f6f6; }
+
+.Page05_BtnDisLike{
+  padding: 8px 36px;
+  background: #fe9898; 
+  cursor: pointer;
+}
 
 /* Reviews */
-.pg2 .rightCol {
-  width: 100%;
+.Page05_Container {
+  display: flex;           /* 가로 방향 정렬 */
+  gap: 32px;               /* 사진과 리뷰 사이 간격 */
+  align-items: flex-start; /* 높이 기준 상단 정렬 */
+  margin-top: 100px;       /* 페이지 여백 */
+  justify-content: center; /* 전체 중앙 정렬 */
+}
+
+.Page05_Review {
+  width: 30%;
   display: grid;
   gap: 24px;
+  margin-left: 50px;
+  margin-top: 100px;
 }
-.pg2 .reviewBox {
+
+.Page05_ReviewBox {
   background: #eeeeee;
   border-radius: 8px;
   padding: 16px;
@@ -94,36 +56,39 @@
   align-content: center;
   border: 1px solid #e1e1e1;
 }
-.pg2 .reviewTitle {
+
+.Page05_ReviewBoxTitle {
   color: #8f99a3;
   font-weight: 700;
   text-transform: lowercase;
 }
-.pg2 .reviewHint {
+
+.Page05_ReviewDesc {
   margin-top: 6px;
   color: #9aa3ad;
   font-size: 13px;
 }
 
 /* Footer progress */
-.pg2 .footer {
+.Page05_Footer {
+  margin-top: 64px;
   padding: 24px 48px 36px;
 }
-.pg2 .progress {
+.Page05_Process {
   width: 100%;
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   align-items: center;
   gap: 24px;
 }
-.pg2 .dot {
+.Page05_Dot {
   width: 18px;
   height: 18px;
   border-radius: 50%;
   background: #e6e6e6;
   box-shadow: inset 0 0 0 4px #dfeaf0;
 }
-.pg2 .dotActive {
+.Page05_DotActive {
   background: #7dd3fc;
   box-shadow: inset 0 0 0 4px #c9eefc;
 }
