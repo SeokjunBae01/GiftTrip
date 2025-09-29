@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "./CSS/GiftTripPages01.css";
+import "../CSS/GiftTripPages01.css";
 
 const questions = [
   "해변에 있는 휴양지를 원하시나요?",
@@ -31,29 +31,29 @@ export default function QuestionPage({ setAnswers, setPage }) {
       setCurrentIndex(currentIndex + 1);
     } else {
       setAnswers(newAnswers);
-      navigate("/") // 이동할 페이지 입력 
+      navigate("/page2") // 이동할 페이지 입력 
     }
   };
 
   return (
-    <div className="pg01 page">
-      <header className="header">
-        <h1 className="logo">Gift Trip</h1>
-        <button className="loginBtn">로그인</button>
+    <div className="CommonPage">
+      <header className="CommonHeader">
+        <h1 className="CommonLogo">Gift Trip</h1>
+        <button className="CommonLoginBtn">로그인</button>
       </header>
 
-      <main className="main">
-        <p className="description">질문을 읽으시고 답변을 골라주세요.</p>
-        <div className="questionBox">{questions[currentIndex]}</div>
-        <div className="actions">
-          <button className="btn" onClick={() => handleAnswer("Yes")}>
+      <main className="Page01_main">
+        <p className="Page01_description">질문을 읽으시고 답변을 골라주세요.</p>
+        <div className="Page01_questionBox">{questions[currentIndex]}</div>
+        <div className="Page01_Actions">
+          <button className="Page01_btn" onClick={() => handleAnswer("Yes")}>
             Yes
           </button>
-          <button className="btn" onClick={() => handleAnswer("No")}>
+          <button className="Page01_btn" onClick={() => handleAnswer("No")}>
             No
           </button>
         </div>
-        <div className="progressStatus">
+        <div className="Page01_progressStatus">
           {currentIndex + 1} / {questions.length}
         </div>
       </main>
