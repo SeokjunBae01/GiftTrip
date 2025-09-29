@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import "../CSS/GiftTripPages06.css";
+import "../CSS/common.css";
 
 const mockSelections = [
   { id: 1, type: "숙박", name: "숙박1", description: "숙박1 설명" },
@@ -36,19 +37,19 @@ export default function MySelectionsPage() {
   };
 
   return (
-    <div className="pg06 page">
-      <header className="header">
-        <h1 className="logo">Gift Trip</h1>
-        <button className="loginBtn">로그인</button>
+    <div className="CommonPage">
+      <header className="CommonHeader">
+        <h1 className="CommonLogo CommonLogo_Left">Gift Trip</h1>
+        <button className="CommonLoginBtn">로그인</button>
       </header>
       
-      <main className="main">
-        <h2 className="title">나의 선택</h2>
-        <div className="category-tabs">
+      <main className="Page06_Main">
+        <h2 className="Page06_Title">나의 선택</h2>
+        <div className="Page06_CategoryTabs">
           {categories.map((category) => (
             <button
               key={category}
-              className={`btn category-btn ${selectedCategory === category ? "btn-bold" : ""}`}
+              className={`Page06_Btn Page06_CategoryBtn ${selectedCategory === category ? "btn-bold" : ""}`}
               onClick={() => setSelectedCategory(category)}
             >
               {category}
@@ -56,11 +57,11 @@ export default function MySelectionsPage() {
           ))}
         </div>
         
-        <div className="sort-container">
+        <div className="Page06_SortContainer">
           {sortOptions.map((option) => (
             <button
               key={option}
-              className={`sort-btn ${selectedSort === option ? "btn-bold" : ""}`}
+              className={`Page06_SortBtn ${selectedSort === option ? "btn-bold" : ""}`}
               onClick={() => setSelectedSort(option)}
             >
               {option}
@@ -68,27 +69,27 @@ export default function MySelectionsPage() {
           ))}
         </div>
         
-        <div className="cards-grid">
+        <div className="Page06_CardsGrid">
           {getFilteredSelections().map((selection) => {
             const isSelected = selectedItems.includes(selection.id);
             return (
               <div
-                className={`card ${isSelected ? "selected-card" : ""}`}
+                className={`Page06_Card ${isSelected ? "Page06_SelectedCard" : ""}`}
                 key={selection.id}
                 onClick={() => handleCardClick(selection.id)}
               >
-                <div className="card-image-placeholder"></div>
-                <div className="card-content">
-                  <h3 className="card-title">{selection.name}</h3>
-                  <p className="card-description">{selection.description}</p>
+                <div className="Page06_CardImagePlaceholder"></div>
+                <div className="Page06_CardContent">
+                  <h3 className="Page06_CardTitle">{selection.name}</h3>
+                  <p className="Page06_CardDescription">{selection.description}</p>
                 </div>
               </div>
             );
           })}
         </div>
         
-        <div className="actions">
-          <button className="btn create-draft-btn">초안 만들기</button>
+        <div className="Page06_Actions">
+          <button className="Page06_btn Page06_CreateBtn">초안 만들기</button>
         </div>
       </main>
     </div>
