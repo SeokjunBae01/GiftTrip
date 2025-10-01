@@ -1,6 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import "../CSS/GiftTripPages06.css";
-import "../CSS/common.css";
 
 const mockSelections = [
   { id: 1, type: "숙박", name: "숙박1", description: "숙박1 설명" },
@@ -18,6 +18,7 @@ const categories = ["숙박", "액티비티", "음식", "인기 스팟"];
 const sortOptions = ["인기순", "평점순"];
 
 export default function MySelectionsPage() {
+  const navigate = useNavigate();
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("숙박");
   const [selectedSort, setSelectedSort] = useState("인기순");
@@ -34,6 +35,10 @@ export default function MySelectionsPage() {
         return [...prevSelectedItems, itemId];
       }
     });
+  };
+
+  const handleCreate = () => {
+    navigate("/page7");
   };
 
   return (
@@ -89,7 +94,9 @@ export default function MySelectionsPage() {
         </div>
         
         <div className="Page06_Actions">
-          <button className="Page06_btn Page06_CreateBtn">초안 만들기</button>
+          <button className="Page06_btn Page06_CreateBtn" onClick={handleCreate}>
+            초안 만들기
+          </button>
         </div>
       </main>
     </div>
