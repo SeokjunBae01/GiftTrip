@@ -15,23 +15,15 @@ const questions = [
   "혼자보다는 사람 많은 곳을 선호하시나요?",
 ];
 
-export default function QuestionPage({ setAnswers, setPage }) {
+export default function QuestionPage() {
   const navigate = useNavigate();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [localAnswers, setLocalAnswers] = useState(
-    Array(questions.length).fill(null)
-  );
 
-  const handleAnswer = (answer) => {
-    const newAnswers = [...localAnswers];
-    newAnswers[currentIndex] = answer;
-    setLocalAnswers(newAnswers);
-
+  const handleAnswer = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(currentIndex + 1);
     } else {
-      setAnswers(newAnswers);
-      navigate("/page2") // 이동할 페이지 입력 
+      navigate("/page2"); 
     }
   };
 
@@ -46,10 +38,10 @@ export default function QuestionPage({ setAnswers, setPage }) {
         <p className="Page01_description">질문을 읽으시고 답변을 골라주세요.</p>
         <div className="Page01_questionBox">{questions[currentIndex]}</div>
         <div className="Page01_Actions">
-          <button className="Page01_btn" onClick={() => handleAnswer("Yes")}>
+          <button className="Page01_btn" onClick={handleAnswer}>
             Yes
           </button>
-          <button className="Page01_btn" onClick={() => handleAnswer("No")}>
+          <button className="Page01_btn" onClick={handleAnswer}>
             No
           </button>
         </div>
