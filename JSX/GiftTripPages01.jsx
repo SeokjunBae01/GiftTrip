@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../CSS/GiftTripPages01.css";
+import "../CSS/common.css"
 
 const questions = [
   "해변에 있는 휴양지를 원하시나요?",
@@ -34,18 +35,18 @@ export default function QuestionPage() {
         <button className="CommonLoginBtn">로그인</button>
       </header>
 
-      <main className="Page01_main">
-        <p className="Page01_description">질문을 읽으시고 답변을 골라주세요.</p>
-        <div className="Page01_questionBox">{questions[currentIndex]}</div>
+      <main className="Page01_Main">
+        <p className="Page01_Description">질문을 읽으시고 답변을 골라주세요.</p>
+        <div className="Page01_QuestionBox">{questions[currentIndex]}</div>
         <div className="Page01_Actions">
-          <button className="Page01_btn" onClick={handleAnswer}>
+          <button className="Page01_Btn" onClick={handleAnswer}>
             Yes
           </button>
-          <button className="Page01_btn" onClick={handleAnswer}>
+          <button className="Page01_Btn" onClick={handleAnswer}>
             No
           </button>
         </div>
-        <div className="Page01_progressStatus">
+        <div className="Page01_ProgressStatus">
           {currentIndex + 1} / {questions.length}
         </div>
       </main>
