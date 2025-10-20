@@ -47,7 +47,7 @@ export default function MySelectionsPage() {
         <h1 className="CommonLogo CommonLogo_Left">Gift Trip</h1>
         <button className="CommonLoginBtn">로그인</button>
       </header>
-      
+
       <main className="Page06_Main">
         <h2 className="Page06_Title">나의 선택</h2>
         <div className="Page06_CategoryTabs">
@@ -61,7 +61,7 @@ export default function MySelectionsPage() {
             </button>
           ))}
         </div>
-        
+
         <div className="Page06_SortContainer">
           {sortOptions.map((option) => (
             <button
@@ -73,7 +73,7 @@ export default function MySelectionsPage() {
             </button>
           ))}
         </div>
-        
+
         <div className="Page06_CardsGrid">
           {getFilteredSelections().map((selection) => {
             const isSelected = selectedItems.includes(selection.id);
