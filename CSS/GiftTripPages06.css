@@ -1,137 +1,138 @@
 .Page06_Main {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  text-align: center;
+ flex: 1;
+ display: flex;
+ flex-direction: column;
+ justify-content: center;
+ align-items: center;
+ padding: 20px;
+ text-align: center;
 }
 
 .Page06_Title {
-  font-size: 24px;
-  font-weight: bold;
-  margin-bottom: 20px;
+ font-size: 24px;
+ font-weight: bold;
+ margin-bottom: 20px;
 }
 
 .Page06_CategoryTabs {
-  display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+ display: flex;
+ gap: 10px;
+ margin-bottom: 20px;
 }
 
 .Page06_CategoryBtn {
-  padding: 10px 20px;
-  border-radius: 20px;
-  border: 1px solid #ccc;
-  background: #f3f3f3;
-  cursor: pointer;
-  font-weight: normal;
-  transition: all 0.2s ease-in-out;
+ padding: 10px 20px;
+ border-radius: 20px;
+ border: 1px solid #ccc;
+ background: #f3f3f3;
+ cursor: pointer;
+ font-weight: normal;
+ transition: all 0.2s ease-in-out;
 }
 
 .Page06_CategoryBtn:hover {
-  background: #ddd;
+ background: #ddd;
 }
 
 .Page06_CategoryBtn.btn-bold {
-  font-weight: bold;
-  background: #91D5CC;
-  color: white;
-  border-color: #91D5CC;
+ font-weight: bold;
+ background: #91D5CC;
+ color: white;
+ border-color: #91D5CC;
 }
 
 .Page06_SortContainer {
-  width: 100%;
-  text-align: right;
-  padding-right: 20px;
-  margin-bottom: 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+ width: 100%;
+ text-align: right;
+ padding-right: 20px;
+ margin-bottom: 20px;
+ display: flex;
+ justify-content: flex-end;
+ gap: 10px;
 }
 
 .Page06_SortBtn {
-  padding: 8px 16px;
-  border-radius: 16px;
-  border: 1px solid #ccc;
-  background: #eee;
-  cursor: pointer;
+ padding: 8px 16px;
+ border-radius: 16px;
+ border: 1px solid #ccc;
+ background: #eee;
+ cursor: pointer;
 }
 
 .Page06_SortBtn.btn-bold {
-  font-weight: bold;
-  background: #91D5CC;
-  color: white;
-  border-color: #91D5CC;
+ font-weight: bold;
+ background: #91D5CC;
+ color: white;
+ border-color: #91D5CC;
 }
 
 .Page06_CardsGrid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 20px;
-  width: 100%;
-  max-width: 900px;
-  padding: 0 20px;
-  box-sizing: border-box;
+ display: grid;
+ grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+ gap: 20px;
+ width: 100%;
+ max-width: 900px;
+ padding: 0 20px;
+ box-sizing: border-box;
 }
 
 .Page06_Card {
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  background: #fff;
-  cursor: pointer;
+ border: 1px solid #e0e0e0;
+ border-radius: 10px;
+ overflow: hidden;
+ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+ background: #fff;
+ cursor: pointer;
+ transition: all 0.2s ease-in-out; /* 부드러운 전환 효과 추가 */
 }
 
-.Page06_Card.selected-card {
-  border: 3px solid #91D5CC;
-  box-shadow: 0 6px 12px rgba(145, 213, 204, 0.5);
-  transform: scale(1.02);
+.Page06_SelectedCard { /* 선택된 카드에 적용될 강조 스타일 */
+ border: 3px solid #91D5CC;
+ box-shadow: 0 6px 12px rgba(145, 213, 204, 0.5);
+ transform: scale(1.02);
 }
 
 .Page06_CardImagePlaceholder {
-  width: 100%;
-  height: 150px;
-  background-color: #f0f0f0;
-  border-bottom: 1px solid #e0e0e0;
+ width: 100%;
+ height: 150px;
+ background-color: #f0f0f0;
+ border-bottom: 1px solid #e0e0e0;
 }
 
 .Page06_CardContent {
-  padding: 15px;
+ padding: 15px;
 }
 
-.Page06CardTitle {
-  font-size: 18px;
-  font-weight: bold;
-  margin-bottom: 5px;
+.Page06_CardTitle { /* 오타 수정: Page06CardTitle -> Page06_CardTitle */
+ font-size: 18px;
+ font-weight: bold;
+ margin-bottom: 5px;
 }
 
 .Page06_CardDescription {
-  font-size: 14px;
-  color: #666;
+ font-size: 14px;
+ color: #666;
 }
 
 .Page06_Actions {
-  margin-top: 30px;
+ margin-top: 30px;
 }
 
 .Page06_CreateBtn {
-  padding: 12px 24px;
-  background: #91D5CC;
-  color: white;
-  border: none;
-  border-radius: 20px;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
-  transition: all 0.2s ease-in-out;
+ padding: 12px 24px;
+ background: #91D5CC;
+ color: white;
+ border: none;
+ border-radius: 20px;
+ font-size: 16px;
+ font-weight: bold;
+ cursor: pointer;
+ box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+ transition: all 0.2s ease-in-out;
 }
 
 .Page06_CreateBtn:hover {
-  background: #7cc0b5;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+ background: #7cc0b5;
+ transform: translateY(-2px);
+ box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
 }
