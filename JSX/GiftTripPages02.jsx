@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import "./CSS/GiftTripPages02.css";
+import "../CSS/common.css";
+import "../CSS/GiftTripPages02.css";
 
 export default function GiftTripPages02() {
   const [note, setNote] = useState("");
@@ -20,11 +21,11 @@ export default function GiftTripPages02() {
   }, []);
 
   return (
-    <div className="pg02">
+    <div className="CommonPage pg02">
       {/* 헤더 */}
-      <header className="header">
-        <div className="logo">Gift Trip</div>
-        <button className="login" type="button">로그인</button>
+      <header className="CommonHeader">
+        <div className="CommonLogo CommonLogo_Left">Gift Trip</div>
+        <button className="CommonLoginBtn" type="button">로그인</button>
       </header>
 
       {/* 본문 카드 */}
