@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import "./CSS/GiftTripPages03.css";
+import "../CSS/common.css";
+import "../CSS/GiftTripPages03.css";
 
 export default function GiftTripPages03() {
   // 데모용 더미 데이터 (백엔드 붙으면 교체)
-  const city = "추천 여행지 이름";
+  const city = "Tokyo";
   const tags = ["하이킹", "미식", "야경"];
   const typeSummary =
     "도보 이동과 대중교통을 선호하고, 야경과 미식 탐방을 즐기는 타입이에요.";
@@ -14,11 +15,11 @@ export default function GiftTripPages03() {
   )}`;
 
   return (
-    <div className="pg03">
+    <div className="CommonPage pg03">
       {/* 헤더 */}
-      <header className="header">
-        <div className="logo">Gift Trip</div>
-        <button className="login" type="button">로그인</button>
+      <header className="CommonHeader">
+        <div className="CommonLogo CommonLogo_Left">Gift Trip</div>
+        <button className="CommonLoginBtn" type="button">로그인</button>
       </header>
 
       {/* 본문 */}
