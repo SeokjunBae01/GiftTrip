@@ -1,7 +1,9 @@
 import React from "react";
-import "./CSS/GiftTripPages07.css";
-import "./CSS/common.css";
+import "../CSS/Common.css";            // 공통(로고/헤더/버튼)
+import "../CSS/GiftTripPages07.css";   // 07 레이아웃·요약·버튼
+import "../CSS/GiftTripPages06.css";   // 06의 카드/그리드 재사용
 
+// 데모용 데이터 (기능 없음)
 const finalSelections = {
   "숙박": [
     { name: "숙박1", description: "숙박1 설명", link: "#" },
@@ -27,10 +29,10 @@ const finalSelections = {
   ],
 };
 
-export default function GiftTripPages07() {
-  const hypeText =
-    "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
+const hypeText =
+  "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
 
+export default function GiftTripPages07() {
   return (
     <div className="CommonPage">
       <header className="CommonHeader">
@@ -44,23 +46,18 @@ export default function GiftTripPages07() {
         {Object.entries(finalSelections).map(([category, items]) => (
           <section className="Page07_Section" key={category}>
             <h3 className="Page07_SectionTitle">{category}</h3>
-            <div className="Page07_CardsGrid">
+
+            {/* 카드/그리드는 06번 스타일 재사용 */}
+            <div className="Page06_CardsGrid">
               {items.map((item, idx) => (
-                <div className="Page07_Card" key={`${category}-${idx}`}>
-                  <div className="Page07_CardImagePlaceholder" />
-                  <div className="Page07_CardContent">
+                <div className="Page06_Card" key={`${category}-${idx}`}>
+                  <div className="Page06_CardImagePlaceholder" />
+                  <div className="Page06_CardContent">
                     <div className="Page07_CardHeader">
-                      <h4 className="Page07_CardTitle">{item.name}</h4>
-                      <a
-                        className="Page07_Link"
-                        href={item.link}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        상세보기
-                      </a>
+                      <h4 className="Page06_CardTitle">{item.name}</h4>
+                      <span className="Page07_Link" aria-hidden>상세보기</span>
                     </div>
-                    <p className="Page07_CardDescription">{item.description}</p>
+                    <p className="Page06_CardDescription">{item.description}</p>
                   </div>
                 </div>
               ))}
@@ -72,8 +69,8 @@ export default function GiftTripPages07() {
         <div className="Page07_Hype">{hypeText}</div>
 
         <div className="Page07_Actions">
-          <button className="Page07_Btn primary" type="button">공유하기</button>
-          <button className="Page07_Btn secondary" type="button">체크리스트 확인</button>
+          <button className="Page07_Btn secondary" type="button">공유하기</button>
+          <button className="Page07_Btn primary" type="button">체크리스트 확인</button>
         </div>
       </main>
     </div>
