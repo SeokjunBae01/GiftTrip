@@ -5,7 +5,8 @@ const path = require("path");
 // ====================================================================
 
 const sessionData = {
-    countryName: "Tokyo",
+    countryName: "일본",
+    countryCode: "JP",
     questionAnswers: [],
     request: "",
     
@@ -32,7 +33,8 @@ const sessionData = {
 };
 
 const initializeData = () => {
-    sessionData.countryName = "Tokyo";
+    sessionData.countryName = "일본";
+    sessionData.countryCode = "JP";
     sessionData.questionAnswers = [];
     sessionData.request = "";
     sessionData.recommendation.city = "Tokyo";
@@ -58,9 +60,10 @@ const setData = (key, value) => {
 /**
  * 여행지 이름 관련 데이터 저장
  */
-const saveCountryData = (countryName) => {
+const saveCountryData = (countryName, countryCode) => {
     if (countryName && countryName.trim().length > 0) {
         setData('countryName', countryName);
+        setData('countryCode', countryCode);
         
         setData('recommendation', { 
             ...sessionData.recommendation,
