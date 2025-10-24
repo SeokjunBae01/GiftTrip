@@ -4,12 +4,12 @@ const router = express.Router();
 
 // 여행지 입력 및 저장
 router.post('/country', (req, res) => {
-    const { countryName } = req.body;
+    const { countryName, countryCode } = req.body;
     
     if (countryName) {
-        saveCountryData(countryName); 
+        saveCountryData(countryName, countryCode); 
         
-        res.status(200).json({ message: `여행지: ${countryName} 저장됨`, next: '/page4' });
+        res.status(200).json({ message: `여행지: ${countryName} (${countryCode}) 저장됨`, next: '/page4' });
     } else {
         res.status(200).json({ message: '여행지 미정, 1페이지로 이동', next: '/page1' });
     }
