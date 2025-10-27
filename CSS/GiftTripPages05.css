@@ -1,15 +1,19 @@
-.Page05_Main{
-  margin-top: 100px;
+.Page05_Main {
+  margin-top: 80px;
   display: grid;
-  gap: 18px;
+  place-items: center;   /* 이미지와 버튼 전체 중앙 정렬 */
+  gap: 24px;
 }
 
 .Page05_MainImage {
-  width: 540px;
-  height: 300px;
-  object-fit: cover;
+  width: 540px;             /* 박스 고정 */
+  height: 300px;            /* 박스 고정 */
+  object-fit: contain;      /* 이미지가 잘리지 않고 비율 유지하며 들어감 */
   display: block;
   border-radius: 15px;
+  background: #f5f5f5;      /* 이미지 없는 공간 배경 (선택) */
+  padding: 8px;             /* 살짝 여백을 줘서 박스 안에 안정적으로 */
+  box-sizing: border-box;   /* padding 포함 계산 */
 }
 
 .Page05_Action{
@@ -70,25 +74,40 @@
 }
 
 /* Footer progress */
+/* 하단 중앙 고정 */
+/* 하단 고정 */
 .Page05_Footer {
-  margin-top: 64px;
-  padding: 24px 48px 36px;
+  position: fixed;
+  left: 50%;
+  bottom: 48px;
+  transform: translateX(-50%);
+  z-index: 9999;
 }
+
+/* 무조건 가로 한 줄 */
 .Page05_Process {
-  width: 100%;
-  display: grid;
-  grid-template-columns: repeat(8, 1fr);
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: center;
   align-items: center;
-  gap: 24px;
+  gap: 14px;
+  white-space: nowrap;
 }
+
+/* 기본 도트: 회색 */
 .Page05_Dot {
-  width: 18px;
-  height: 18px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
-  background: #e6e6e6;
-  box-shadow: inset 0 0 0 4px #dfeaf0;
+  background: #e0e0e0;
+  border: 2px solid #bdbdbd;
+  flex: 0 0 22px;
+  transition: background-color 200ms ease, border-color 200ms ease;
 }
-.Page05_DotActive {
-  background: #7dd3fc;
-  box-shadow: inset 0 0 0 4px #c9eefc;
+
+/* 완료된 도트: 파란색 */
+.Page05_DotDone {
+  background: #00d0ff;
+  border-color: #0080ff;
 }
