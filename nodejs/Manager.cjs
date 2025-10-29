@@ -1,7 +1,3 @@
-// ====================================================================
-// 세션 데이터 및 관리 로직 (Page00, 01)
-// ====================================================================
-
 const sessionData = {
     countryName: "일본",
     countryCode: "JP",
@@ -9,111 +5,37 @@ const sessionData = {
     request: "",
     
     recommendation: {
-        city: "Tokyo",
         typeSummary: "도보 이동과 미식 탐방을 즐기는 타입이에요.",
-        tags: ["미식", "도시", "야경"],
+        tags: ["미식", "도시", "야경"]
     },
-    
-    categoryProgress: {
-        "숙박": false,
-        "액티비티": false,
-        "음식": false,
-        "인기스팟": false,
-    },
-    preferenceAnswers: {
-        "숙박": [],
-        "액티비티": [],
-        "음식": [],
-        "인기스팟": [],
-    },
-    finalSelections: [],
-    checklistContent: [],
-};
+};//city 변수 없앰
 
-const initializeData = () => {
-    sessionData.countryName = "일본";
-    sessionData.countryCode = "JP";
-    sessionData.questionAnswers = [];
-    sessionData.request = "";
-    sessionData.recommendation.city = "Tokyo";
-    sessionData.preferenceAnswers = { "숙박": [], "액티비티": [], "음식": [], "인기스팟": [] };
-    sessionData.categoryProgress = { "숙박": false, "액티비티": false, "음식": false, "인기스팟": false };
-    sessionData.finalSelections = [];
-    sessionData.checklistContent = [];
-};
-
-const getData = () => ({ ...sessionData }); 
-
-/**
- * 특정 키 데이터 설정
- */
 const setData = (key, value) => {
     if (sessionData.hasOwnProperty(key)) {
-        sessionData[key] = value;
+        sessionData[key]=value;
         return true;
     }
     return false;
 };
 
-/**
- * 여행지 이름 관련 데이터 저장
- */
-const saveCountryData = (countryName, countryCode) => {
-    if (countryName && countryName.trim().length > 0) {
-        setData('countryName', countryName);
-        setData('countryCode', countryCode);
-        
-        setData('recommendation', { 
-            ...sessionData.recommendation,
-            city: countryName 
-        });
-        
+const saveAdditionalRequest = (request) => {
+    if (request && request.trim().length>0) {
+        setData('request', request);
         return true;
     }
+    setData('request', 'No Additional Request');
     return false;
-};
+};//추가요청사항 저장
 
-/**
- * 질문 답변 저장
- */
-const saveQuestionAnswers = (questionAnswers) => {
-    if (questionAnswers && Array.isArray(questionAnswers) && questionAnswers.length === 10) {
-        setData('questionAnswers', questionAnswers);
-        return true;
-    }
-    return false;
-};
+const getData = () => ({...sessionData});
 
-// ====================================================================
-// 카테고리 및 이미지 경로 관리 로직 (Page04, 05)
-// ====================================================================
+function getAdditionalRequest() {
+    return sessionData.request;
+}//추가요청사항 불러옴
 
-// 전역 카테고리 목록
-const categories = [
-  { key: "Stay", name: "숙박" },
-  { key: "Activity", name: "액티비티" },
-  { key: "Food", name: "음식" },
-  { key: "Spots", name: "인기스팟" },
-];
-
-// 인덱스로 카테고리 이름 가져오기
-function getCategoryName(index) {
-    return categories[index] || null;
-}
-
-function getCountryCode(){
-  return sessionData.countryCode;
-}
-module.exports = {
-    // 세션 데이터 관리 함수
-    initializeData,
+module.exports={
     getData,
     setData,
-    saveCountryData,
-    saveQuestionAnswers,
-    
-    // 카테고리/이미지 데이터 및 함수
-    categories,
-    getCategoryName,
-    getCountryCode,
+    saveAdditionalRequest,
+    getAdditionalRequest,
 };
