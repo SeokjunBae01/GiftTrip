@@ -1,17 +1,37 @@
 import React, { useEffect, useState } from "react";
-import "../CSS/common.css";
+import { useNavigate } from "react-router-dom";
+import "../CSS/Common.css";
 import "../CSS/GiftTripPages03.css";
 
 export default function GiftTripPages03() {
-  // 데모용 더미 데이터 (백엔드 붙으면 교체)
-  const city = "Tokyo";
-  const tags = ["하이킹", "미식", "야경"];
-  const typeSummary =
-    "도보 이동과 대중교통을 선호하고, 야경과 미식 탐방을 즐기는 타입이에요.";
+  const navigate = useNavigate();
+  
+  // 백엔드에서 받아올 값 저장용 상태
+  const [info, setInfo] = useState({
+    countryName: "",
+    typeSummary: "",
+    tags: [],
+  });
+
+  // 페이지 로드 시 GET 요청
+  useEffect(() => {
+    const fetchRecommendation = async () => {
+      try {
+        const res = await fetch("http://localhost:3000/api/page3/recommendations");
+        if (!res.ok) throw new Error("서버 응답 오류");
+        const data = await res.json();
+        console.log("백엔드로부터 받은 데이터:", data);
+        setInfo(data);
+      } catch (e) {
+        console.error("데이터 불러오기 실패:", e);
+      }
+    };
+    fetchRecommendation();
+  }, []);
 
   // 유튜브 검색 링크
   const youtubeUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(
-    `${city} landscape`
+    `${info.countryName} 풍경`
   )}`;
 
   return (
@@ -26,8 +46,8 @@ export default function GiftTripPages03() {
       <main className="content">
         <h2 className="title">사용자님을 위한 추천 여행지✈️</h2>
 
-        {/* 도시 이름: 버튼이 아닌 배지 형태 텍스트 */}
-        <div className="city-label">{city}</div>
+        {/* 나라 이름: 버튼이 아닌 배지 형태 텍스트 */}
+        <div className="city-label">{info.countryName}</div>
 
         {/* 안내 문구: 클릭 시 유튜브 검색 링크 */}
         <a
@@ -41,14 +61,14 @@ export default function GiftTripPages03() {
 
         {/* LLM 여행 타입 요약 텍스트 공간 (회색 박스) */}
         <div className="type-summary" aria-live="polite">
-          {typeSummary}
+          {info.typeSummary}
         </div>
 
         {/* 여행 타입 해시태그 */}
         <section className="type">
           <span className="type-label">AI가 분석한 사용자님의 여행타입은?</span>
           <div className="type-tags">
-            {tags.map((t) => (
+            {info.tags.map((t) => (
               <span className="tag" key={t}>#{t}</span>
             ))}
           </div>
@@ -56,8 +76,8 @@ export default function GiftTripPages03() {
 
         {/* 하단 CTA */}
         <div className="actions">
-          <button className="btn primary" type="button">초안 만들기 시작</button>
-          <button className="btn secondary" type="button">다시 답변하고 재추천 받기</button>
+          <button className="btn primary" onClick={() => navigate("/page2")}>초안 만들기 시작</button>
+          <button className="btn secondary" onClick={() => navigate("/page2")}>다시 답변하고 재추천 받기</button>
         </div>
       </main>
     </div>
