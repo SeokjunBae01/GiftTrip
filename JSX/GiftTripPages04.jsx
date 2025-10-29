@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // 새로고침 이슈: useLocation 추가
 import { useEffect, useState } from "react";
 import { useAppData } from "../JSX/Data.jsx";              // ✅ Context에서 전역 데이터 사용
 import "../CSS/GiftTripPages04.css";
@@ -6,6 +6,10 @@ import "../CSS/Common.css";
 
 export default function GiftTripPages04() {
   const navigate = useNavigate();
+  const location = useLocation(); //새로고침 이슈: location 객체 가져오기
+
+  // 새로고침 이슈: Page00에서 state로 넘겨준 코드를 이 변수에 저장
+  const codeFromState = location.state?.selectedCode;
 
   // ─────────────────────────────────────────
   // API 받아온거 변수에 각각 저장하기 (Context 사용)
@@ -17,17 +21,23 @@ export default function GiftTripPages04() {
   // 각 카테고리 첫 번째 이미지 가져오기
   
   useEffect(() => {
+    // 새로고침 이슈: state로 받은 값(codeFromState)이 있으면 그것을 최우선으로 사용,
+    //              없으면(예: 뒤로 가기) Context의 값(countryCode)을 사용
+    const effectiveCode = codeFromState || countryCode;
+    // 새로고침 이슈: 로딩 중이거나, 최종 코드(effectiveCode)가 없으면 중단
     if (loading) return;                   // 아직 로딩 중이면 대기
-    if (!countryCode || categories.length === 0) return;
+    if (!effectiveCode || categories.length === 0) return;
 
     const fetchThumbnails = async () => {
       const newThumbs = {};
-      console.log("받은 코드 : ", countryCode);
+      // 새로고침 이슈: API 호출 시 effectiveCode 사용
+      console.log("받은 코드 : ", effectiveCode);
 
       // 2️⃣ 받아온 countryCode로 fetch
       for (const { key, name } of categories) {    // ✅ categories.type ❌  그냥 배열
         try {
-          const url = `http://localhost:3000/api/${countryCode}/${key}`;
+          // 새로고침 이슈: API 호출 시 effectiveCode 사용
+          const url = `http://localhost:3000/api/${effectiveCode}/${key}`;
           console.log("시도 중 페이지 : ", url);
           const res = await fetch(url);
           const data = await res.json();   // { success, country, category, images: [...] }
@@ -42,7 +52,8 @@ export default function GiftTripPages04() {
     };
 
     fetchThumbnails();
-  }, [loading, countryCode, categories]);
+    // 새로고침 이슈: 의존성 배열에 Context의 'countryCode'와 location의 'codeFromState' 둘 다 포함
+  }, [loading, countryCode, categories, codeFromState]);
 
   // ─────────────────────────────────────────
   // 완료 상태 업데이트 감지
