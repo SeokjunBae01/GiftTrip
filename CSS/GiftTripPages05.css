@@ -1,19 +1,19 @@
 .Page05_Main {
   margin-top: 80px;
   display: grid;
-  place-items: center;   /* 이미지와 버튼 전체 중앙 정렬 */
+  place-items: center;   /* ✅ 이미지와 버튼 전체 중앙 정렬 */
   gap: 24px;
 }
 
 .Page05_MainImage {
-  width: 540px;             /* 박스 고정 */
-  height: 300px;            /* 박스 고정 */
-  object-fit: contain;      /* 이미지가 잘리지 않고 비율 유지하며 들어감 */
+  width: 540px;             /* ✅ 박스 고정 */
+  height: 300px;            /* ✅ 박스 고정 */
+  object-fit: contain;      /* ✅ 이미지가 잘리지 않고 비율 유지하며 들어감 */
   display: block;
   border-radius: 15px;
-  background: #f5f5f5;      /* 이미지 없는 공간 배경 (선택) */
-  padding: 8px;             /* 살짝 여백을 줘서 박스 안에 안정적으로 */
-  box-sizing: border-box;   /* padding 포함 계산 */
+  background: #f5f5f5;      /* ✅ 이미지 없는 공간 배경 (선택) */
+  padding: 8px;             /* ✅ 살짝 여백을 줘서 박스 안에 안정적으로 */
+  box-sizing: border-box;   /* ✅ padding 포함 계산 */
 }
 
 .Page05_Action{
@@ -84,7 +84,7 @@
   z-index: 9999;
 }
 
-/* 무조건 가로 한 줄 */
+/* ✅ 무조건 가로 한 줄 */
 .Page05_Process {
   display: flex;
   flex-direction: row;
@@ -95,7 +95,7 @@
   white-space: nowrap;
 }
 
-/* 기본 도트: 회색 */
+/* ✅ 기본 도트: 회색 */
 .Page05_Dot {
   width: 22px;
   height: 22px;
@@ -106,7 +106,7 @@
   transition: background-color 200ms ease, border-color 200ms ease;
 }
 
-/* 완료된 도트: 파란색 */
+/* ✅ 완료된 도트: 파란색 */
 .Page05_DotDone {
   background: #00d0ff;
   border-color: #0080ff;
