@@ -4,7 +4,7 @@ import "../CSS/GiftTripPages00.css";
 import "../CSS/Common.css";
 
 // 백엔드 API 기본 URL 설정
-const API_BASE_URL = 'http://localhost:3000/api/page00';
+const API_BASE_URL = 'http://localhost:3000/api/page0';
 
 // 국가명 하드코딩
 const COUNTRY_OPTIONS = [
@@ -119,7 +119,9 @@ export default function GiftTripPages00() {
         }
 
         const data = await response.json();
-        navigate(data.next);
+        navigate(data.next, { 
+          state: { selectedCode: countryCode } 
+        });
 
       } catch (error) {
         console.error('여행지 데이터 저장 중 오류 발생:', error);
@@ -187,5 +189,4 @@ export default function GiftTripPages00() {
       </main>
     </div>
   );
-
 }
