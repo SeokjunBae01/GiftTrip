@@ -4,7 +4,7 @@ import "../CSS/GiftTripPages00.css";
 import "../CSS/Common.css";
 
 // 백엔드 API 기본 URL 설정
-const API_BASE_URL = 'http://localhost:4000/api/page00';
+const API_BASE_URL = 'http://localhost:3000/api/page00';
 
 // 국가명 하드코딩
 const COUNTRY_OPTIONS = [
@@ -187,4 +187,5 @@ export default function GiftTripPages00() {
       </main>
     </div>
   );
+
 }
