@@ -3,7 +3,7 @@ const { saveQuestionAnswers } = require('./Manager.cjs');
 const router = express.Router();
 
 // 10개 질문 답변 저장
-router.post('/answers', (req, res) => {
+router.post('/page1/answers', (req, res) => {
     const { questionAnswers } = req.body;
     
     if (saveQuestionAnswers(questionAnswers)) {

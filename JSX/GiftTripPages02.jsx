@@ -9,7 +9,7 @@ export default function GiftTripPages02() {
   const [loading, setLoading] = useState(false);
 
   // 백엔드 API 기본 URL 설정
-  const API_BASE_URL = 'http://localhost:3000/api';
+  const API_BASE_URL = 'http://localhost:3000/api/page2';
   const examples = [
     "예: 도쿄 제외, 아시아 내에서만",
     "예: 동유럽 위주, 야경이 멋진 도시",

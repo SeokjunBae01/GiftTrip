@@ -1,42 +1,28 @@
-// routes/api.js (현재 파일)
+// GiftTripPages04.cjs
 const express = require("express");
 const router = express.Router();
-const {
-  categories,
-  getCategoryName,
-  getCategoryPictures,     // ✅ 추가
-} = require("./Manager.cjs");
+const { categories, getCategoryName } = require("./Manager.cjs");
 
 // 전체 카테고리 목록
-router.get("/categories", (req, res) => {
+router.get("/page4/categories", (req, res) => {
   return res.json({ success: true, categories });
 });
 
-// 시작하기: 인덱스를 이름으로 변환
+// 시작하기: 인덱스 → 이름
 router.get("/start/:index", (req, res) => {
   const index = Number(req.params.index);
   if (!Number.isInteger(index) || index < 0 || index >= categories.length) {
     return res.status(400).json({ success: false, error: "잘못된 인덱스입니다." });
   }
-  const categoryName = getCategoryName(index);
+  const cat = getCategoryName(index); // { key, name }
   return res.json({
     success: true,
     categoryIndex: index,
-    categoryName,
-    message: `${categoryName} 여행을 시작합니다!`,
+    categoryName: cat?.name ?? String(cat),
+    message: `${cat?.name ?? cat} 여행을 시작합니다!`,
   });
 });
 
-// ✅ 카테고리별 이미지 목록 제공
-router.get("/pictures/:CountryCode/:category", (req, res) => {
-  const { countryCode, category } = req.params;
-  try {
-    // countryCode는 현재 세션값 검증용으로만 사용(필요시 검증 로직 추가)
-    const pictures = getCategoryPictures(category) || [];
-    return res.json({ success: true, countryCode, category, pictures });
-  } catch (e) {
-    return res.status(500).json({ success: false, error: "이미지를 가져올 수 없습니다." });
-  }
-});
+// ⚠️ 여기엔 더 이상 /page4/pictures 라우트가 없습니다 (UpLoadingImages가 담당)
 
 module.exports = router;

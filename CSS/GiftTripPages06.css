@@ -1,138 +1,153 @@
+/* 레이아웃 */
 .Page06_Main {
- flex: 1;
- display: flex;
- flex-direction: column;
- justify-content: center;
- align-items: center;
- padding: 20px;
- text-align: center;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;   /* 상단 정렬로 여백 낭비 줄임 */
+  align-items: center;
+  padding: 20px;
+  text-align: center;
 }
 
 .Page06_Title {
- font-size: 24px;
- font-weight: bold;
- margin-bottom: 20px;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
 }
 
+/* 카테고리 탭 */
 .Page06_CategoryTabs {
- display: flex;
- gap: 10px;
- margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 .Page06_CategoryBtn {
- padding: 10px 20px;
- border-radius: 20px;
- border: 1px solid #ccc;
- background: #f3f3f3;
- cursor: pointer;
- font-weight: normal;
- transition: all 0.2s ease-in-out;
+  padding: 10px 16px;
+  border-radius: 20px;
+  border: 1px solid #ccc;
+  background: #f3f3f3;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background .2s ease, transform .15s ease;
 }
-
-.Page06_CategoryBtn:hover {
- background: #ddd;
-}
-
+.Page06_CategoryBtn:hover { background: #e8e8e8; }
 .Page06_CategoryBtn.btn-bold {
- font-weight: bold;
- background: #91D5CC;
- color: white;
- border-color: #91D5CC;
+  font-weight: 700;
+  background: #91D5CC;
+  color: #fff;
+  border-color: #91D5CC;
 }
 
+/* 정렬 버튼 */
 .Page06_SortContainer {
- width: 100%;
- text-align: right;
- padding-right: 20px;
- margin-bottom: 20px;
- display: flex;
- justify-content: flex-end;
- gap: 10px;
+  width: 100%;
+  text-align: right;
+  padding-right: 20px;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 
 .Page06_SortBtn {
- padding: 8px 16px;
- border-radius: 16px;
- border: 1px solid #ccc;
- background: #eee;
- cursor: pointer;
+  padding: 8px 14px;
+  border-radius: 16px;
+  border: 1px solid #ccc;
+  background: #eee;
+  cursor: pointer;
+  transition: background .2s ease;
 }
-
+.Page06_SortBtn:hover { background: #e3e3e3; }
 .Page06_SortBtn.btn-bold {
- font-weight: bold;
- background: #91D5CC;
- color: white;
- border-color: #91D5CC;
+  font-weight: 700;
+  background: #91D5CC;
+  color: #fff;
+  border-color: #91D5CC;
 }
 
+/* 카드 그리드 */
 .Page06_CardsGrid {
- display: grid;
- grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
- gap: 20px;
- width: 100%;
- max-width: 900px;
- padding: 0 20px;
- box-sizing: border-box;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); /* ✅ 카드 폭 살짝 축소 */
+  gap: 18px;
+  width: 100%;
+  max-width: 900px;
+  padding: 0 20px;
+  box-sizing: border-box;
 }
 
+/* 카드 */
 .Page06_Card {
- border: 1px solid #e0e0e0;
- border-radius: 10px;
- overflow: hidden;
- box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
- background: #fff;
- cursor: pointer;
- transition: all 0.2s ease-in-out; /* 부드러운 전환 효과 추가 */
+  border: 1px solid #e7e7e7;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(0,0,0,.08);
+  cursor: pointer;
+  transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+}
+.Page06_Card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,.12);
 }
 
-.Page06_SelectedCard { /* 선택된 카드에 적용될 강조 스타일 */
- border: 3px solid #91D5CC;
- box-shadow: 0 6px 12px rgba(145, 213, 204, 0.5);
- transform: scale(1.02);
+.Page06_SelectedCard {
+  border: 3px solid #91D5CC;
+  box-shadow: 0 8px 16px rgba(145,213,204,.35);
+  transform: translateY(-1px) scale(1.01);
 }
 
-.Page06_CardImagePlaceholder {
- width: 100%;
- height: 150px;
- background-color: #f0f0f0;
- border-bottom: 1px solid #e0e0e0;
+/* ✅ 이미지: 높이 고정 + 꽉 채우기 */
+.Page06_CardImage {
+  display: block;
+  width: 100%;
+  height: 170px;              /* ✅ 여기 수치로 크기 조절 (원하면 160~200px 사이로 조정) */
+  object-fit: cover;          /* 규격에 꽉 채우기(비율 유지) */
+  border-bottom: 1px solid #eee;
 }
 
+/* 텍스트 */
 .Page06_CardContent {
- padding: 15px;
+  padding: 12px 14px 14px;
 }
 
-.Page06_CardTitle { /* 오타 수정: Page06CardTitle -> Page06_CardTitle */
- font-size: 18px;
- font-weight: bold;
- margin-bottom: 5px;
+.Page06_CardTitle {
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 6px;
 }
 
 .Page06_CardDescription {
- font-size: 14px;
- color: #666;
+  font-size: 13px;
+  color: #666;
 }
 
+/* 하단 CTA */
 .Page06_Actions {
- margin-top: 30px;
+  margin-top: 24px;
 }
 
 .Page06_CreateBtn {
- padding: 12px 24px;
- background: #91D5CC;
- color: white;
- border: none;
- border-radius: 20px;
- font-size: 16px;
- font-weight: bold;
- cursor: pointer;
- box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
- transition: all 0.2s ease-in-out;
+  padding: 12px 22px;
+  background: #91D5CC;
+  color: #fff;
+  border: none;
+  border-radius: 20px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.18);
+  transition: transform .15s ease, box-shadow .15s ease, background .2s ease;
 }
-
 .Page06_CreateBtn:hover {
- background: #7cc0b5;
- transform: translateY(-2px);
- box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+  background: #7cc0b5;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,.22);
+}
+.Page06_CreateBtn:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }

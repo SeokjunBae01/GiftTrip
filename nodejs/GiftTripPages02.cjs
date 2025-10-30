@@ -1,10 +1,9 @@
     const express = require('express');
-    const {saveAdditionalRequest} = require('./Manager.cjs');
-    const {getData} = require('./Manager.cjs');
+    const {saveAdditionalRequest, getData} = require('./Manager.cjs');
     const router = express.Router();
 
     //추가요청사항 입력 및 저장
-    router.post('/request', (req, res) => {
+    router.post('/page2/request', (req, res) => {
         const {request} = req.body;
         console.log("[백엔드 로그] 받은 추가요청사항:", request);  // 👈 여기에 찍힘
         

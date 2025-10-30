@@ -1,26 +1,48 @@
+// GiftTripPages05.cjs
 const express = require("express");
 const router = express.Router();
-const { getCategoryPictures } = require("./Manager.cjs");
+const { addLike, addDislike, clearLikes } = require("./LikedStore.cjs");
 
-// 05 페이지용 – 카테고리별 이미지 배열 반환 API
-router.get("/pictures/:category", (req, res) => {
-  const categoryName = req.params.category?.trim();
-  const pictures = getCategoryPictures(categoryName);
-
-  if (!pictures || pictures.length === 0) {
-    return res.status(404).json({ error: "이미지를 찾을 수 없습니다." });
+// 👍 좋아요 저장
+router.post("/page5/like", (req, res) => {
+  try {
+    const { countryCode, categoryKey, imageUrl } = req.body || {};
+    if (!categoryKey || !imageUrl) {
+      return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
+    }
+    const id = addLike({ countryCode, categoryKey, imageUrl });
+    if (!id) return res.status(500).json({ success: false, error: "저장 실패" });
+    return res.json({ success: true, id });
+  } catch (e) {
+    console.error("[/page5/like] error:", e);
+    return res.status(500).json({ success: false, error: "서버 오류" });
   }
+});
 
-  // ✅ 로컬 경로를 URL 경로로 변환
-  const publicPaths = pictures.map((picPath) => {
-    return "/Picture" + picPath.split("Picture")[1].replace(/\\/g, "/");
-  });
+// 👎 싫어요 (원하면 기록/무시)
+router.post("/page5/dislike", (req, res) => {
+  try {
+    const { countryCode, categoryKey, imageUrl } = req.body || {};
+    if (!categoryKey || !imageUrl) {
+      return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
+    }
+    addDislike({ countryCode, categoryKey, imageUrl });
+    return res.json({ success: true });
+  } catch (e) {
+    console.error("[/page5/dislike] error:", e);
+    return res.status(500).json({ success: false, error: "서버 오류" });
+  }
+});
 
-  res.json({
-    category: categoryName,
-    pictures: publicPaths,
-    count: publicPaths.length,
-  });
+// 🧹 좋아요 전체 초기화 (디버깅용) — 프론트에서 호출 중인 경로와 동일
+router.post("/page5/likes/reset", (req, res) => {
+  try {
+    clearLikes();
+    return res.json({ success: true, cleared: true });
+  } catch (e) {
+    console.error("[/page5/likes/reset] error:", e);
+    return res.status(500).json({ success: false, error: "초기화 실패" });
+  }
 });
 
 module.exports = router;

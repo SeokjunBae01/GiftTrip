@@ -4,7 +4,7 @@ import axios from "axios";
 import "../CSS/GiftTripPages01.css";
 import "../CSS/common.css"
 
-const API_BASE_URL = "http://localhost:3000/api/page01";
+const API_BASE_URL = "http://localhost:3000/api/page1";
 
 const questions = [
   "해변에 있는 휴양지를 원하시나요?",

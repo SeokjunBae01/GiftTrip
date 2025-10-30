@@ -3,7 +3,7 @@ const { saveCountryData } = require('./Manager.cjs');
 const router = express.Router();
 
 // 여행지 입력 및 저장
-router.post('/country', (req, res) => {
+router.post('/page0/country', (req, res) => {
     const { countryName, countryCode } = req.body;
     
     if (countryName) {

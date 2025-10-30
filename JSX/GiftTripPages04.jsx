@@ -1,129 +1,179 @@
-import { useNavigate, useLocation } from "react-router-dom"; // 새로고침 이슈: useLocation 추가
-import { useEffect, useState } from "react";
-import { useAppData } from "../JSX/Data.jsx";              // ✅ Context에서 전역 데이터 사용
+// GiftTripPages04.jsx
+import { useNavigate, useLocation } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { useAppData } from "../JSX/Data.jsx";
 import "../CSS/GiftTripPages04.css";
 import "../CSS/Common.css";
 
 export default function GiftTripPages04() {
   const navigate = useNavigate();
-  const location = useLocation(); //새로고침 이슈: location 객체 가져오기
+  const location = useLocation();
 
-  // 새로고침 이슈: Page00에서 state로 넘겨준 코드를 이 변수에 저장
+  // Page00에서 전달받은 코드 우선
   const codeFromState = location.state?.selectedCode;
 
-  // ─────────────────────────────────────────
-  // API 받아온거 변수에 각각 저장하기 (Context 사용)
-  const { loading, countryCode, categories } = useAppData(); // ← { code, categories }
-  const [thumbnails, setThumbnails] = useState({});          // { [title]: url }
-  const [completed, setCompleted] = useState([]);            // ["Stay", ...]
+  // Context: { loading, countryCode, categories: [{key,name}] }
+  const { loading, countryCode, categories } = useAppData();
 
-  // ─────────────────────────────────────────
-  // 각 카테고리 첫 번째 이미지 가져오기
-  
+  const [thumbnails, setThumbnails] = useState({}); // { [key]: url|null }
+  const [completed, setCompleted] = useState([]);   // ["숙박","액티비티","음식","인기스팟"]
+
+  // 완료 상태 로드
+  const loadCompleted = () => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("completedCategories")) || [];
+      setCompleted(Array.isArray(stored) ? stored : []);
+    } catch {
+      setCompleted([]);
+    }
+  };
+
   useEffect(() => {
-    // 새로고침 이슈: state로 받은 값(codeFromState)이 있으면 그것을 최우선으로 사용,
-    //              없으면(예: 뒤로 가기) Context의 값(countryCode)을 사용
+    loadCompleted();
+    const onFocus = () => loadCompleted();
+    window.addEventListener("focus", onFocus);
+    return () => window.removeEventListener("focus", onFocus);
+  }, [location.key]);
+
+  // 썸네일 로딩
+  useEffect(() => {
     const effectiveCode = codeFromState || countryCode;
-    // 새로고침 이슈: 로딩 중이거나, 최종 코드(effectiveCode)가 없으면 중단
-    if (loading) return;                   // 아직 로딩 중이면 대기
+    if (loading) return;
     if (!effectiveCode || categories.length === 0) return;
 
     const fetchThumbnails = async () => {
       const newThumbs = {};
-      // 새로고침 이슈: API 호출 시 effectiveCode 사용
-      console.log("받은 코드 : ", effectiveCode);
-
-      // 2️⃣ 받아온 countryCode로 fetch
-      for (const { key, name } of categories) {    // ✅ categories.type ❌  그냥 배열
+      for (const { key, name } of categories) {
         try {
-          // 새로고침 이슈: API 호출 시 effectiveCode 사용
-          const url = `http://localhost:3000/api/${effectiveCode}/${key}`;
-          console.log("시도 중 페이지 : ", url);
+          const url = `http://localhost:3000/api/page4/pictures/${effectiveCode}/${key}`;
           const res = await fetch(url);
-          const data = await res.json();   // { success, country, category, images: [...] }
-          newThumbs[key] = data.images?.[0] || null;  // ✅ 첫 번째 이미지
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const data = await res.json(); // { success, country, category, pictures: [...] }
+          newThumbs[key] = data.pictures?.[0] || null;
         } catch (e) {
           console.error(`${name} 썸네일 불러오기 실패`, e);
           newThumbs[key] = null;
         }
       }
-
       setThumbnails(newThumbs);
     };
 
     fetchThumbnails();
-    // 새로고침 이슈: 의존성 배열에 Context의 'countryCode'와 location의 'codeFromState' 둘 다 포함
   }, [loading, countryCode, categories, codeFromState]);
 
-  // ─────────────────────────────────────────
-  // 완료 상태 업데이트 감지
-  useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem("completedCategories")) || [];
-    setCompleted(stored);
-  }, []);
+  // 전부 완료?
+  const allDone = useMemo(() => {
+    if (!categories || categories.length === 0) return false;
+    const done = new Set(completed); // 이름(name) 기준 저장 가정
+    return categories.every(({ name }) => done.has(name));
+  }, [categories, completed]);
 
-  // ─────────────────────────────────────────
-  // 페이지 이동 시 완료 상태 저장
   const handleStart = (name, index) => {
-    navigate("/page5", {
-      state: { categoryIndex: index, categoryName: name },
-    });
+    // page5에서 완료 처리 후 localStorage에 이름(name) 추가하도록 구성
+    navigate("/page5", { state: { categoryIndex: index, categoryName: name } });
   };
 
-  // ─────────────────────────────────────────
-  useEffect(() => {
-    // 페이지 새로고침 시 완료 상태 초기화 (필요 여부 확인 권장)
-    localStorage.clear();
-    sessionStorage.clear();
-  }, []);
-  
+  const handleNext = () => {
+    navigate("/page6", { state: { from: "page4" } });
+  };
+
+  // ✅ 완료 상태 초기화(디버깅용)
+  const handleResetCompleted = () => {
+    localStorage.removeItem("completedCategories");
+    setCompleted([]);
+    alert("완료 상태가 초기화되었습니다.");
+  };
+
+  // 좋아요 초기화
+  const handleResetLikes = async () => {
+    if (!window.confirm("좋아요 데이터도 모두 초기화할까요?")) return;
+    try {
+      const res = await fetch("http://localhost:3000/api/page5/likes/reset", { method: "POST" });
+      const data = await res.json();
+      if (data.success) alert("좋아요 데이터가 초기화되었습니다!");
+      else alert("초기화 실패");
+    } catch (err) {
+      console.error(err);
+      alert("서버 오류로 초기화 실패");
+    }
+  };
+
   return (
-  <div className="CommonPage">
-    <header className="CommonHeader">
-      <h1 className="CommonLogo Page04_Logo">Gift Trip</h1>
-      <button className="CommonLoginBtn">로그인</button>
-    </header>
-    
-    <main className="Page04_Main">
-      {loading ? (
-        <div className="Page04_ThumbnailPlaceholder">로딩 중…</div>
-      ) : categories.length === 0 ? (
-        <div className="Page04_ThumbnailPlaceholder">카테고리가 없습니다</div>
-      ) : (
-        categories.map(({ key, name }, index) => (
-          <section className="Page04_Card" key={key}>
-            <div className="CommonFrame Page04_TitleFrame">{name}</div>
+    <div className="CommonPage">
+      <header className="CommonHeader">
+        <h1 className="CommonLogo Page04_Logo">Gift Trip</h1>
+        <button className="CommonLoginBtn">로그인</button>
+      </header>
 
-            {/* 대표 이미지 출력 */}
-            <div className="Page04_Thumbnail">
-              {thumbnails?.[key] ? (
-                <img
-                  src={thumbnails[key]}
-                  alt={`${name} 썸네일`}
-                  onError={(e) => { e.currentTarget.style.display = "none"; }}
-                />
-              ) : (
-                <div className="Page04_ThumbnailPlaceholder">이미지 없음</div>
-              )}
-            </div>
+      <main className="Page04_Main">
+        {loading ? (
+          <div className="Page04_ThumbnailPlaceholder">로딩 중…</div>
+        ) : categories.length === 0 ? (
+          <div className="Page04_ThumbnailPlaceholder">카테고리가 없습니다</div>
+        ) : (
+          categories.map(({ key, name }, index) => {
+            const isDone = completed.includes(name);
+            return (
+              <section className="Page04_Card" key={key}>
+                <div className="CommonFrame Page04_TitleFrame">{name}</div>
 
-            {/* 완료 상태에 따라 버튼 변경 */}
-            <button
-              className={`CommonFrame Page04_ActionFrame ${
-                completed.includes(name) ? "Completed" : ""
-              }`}
-              onClick={() => handleStart(name, index)}
-              disabled={completed.includes(name)}
-            >
-              {completed.includes(name) ? "완료" : "시작하기"}
-            </button>
-          </section>
-        ))
+                <div className="Page04_Thumbnail">
+                  {thumbnails?.[key] ? (
+                    <img
+                      src={thumbnails[key]}
+                      alt={`${name} 썸네일`}
+                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                    />
+                  ) : (
+                    <div className="Page04_ThumbnailPlaceholder">이미지 없음</div>
+                  )}
+                </div>
+
+                <button
+                  className={`CommonFrame Page04_ActionFrame ${isDone ? "Completed" : ""}`}
+                  onClick={() => handleStart(name, index)}
+                  disabled={isDone}
+                >
+                  {isDone ? "완료" : "시작하기"}
+                </button>
+              </section>
+            );
+          })
+        )}
+
+        {/* 🔧 디버깅 툴바: 완료 상태 초기화 버튼 */}
+        <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
+          <button
+            className="CommonFrame"
+            onClick={handleResetCompleted}
+            style={{ padding: "10px 16px" }}
+          >
+            완료 상태 초기화
+          </button>
+
+          {/* 좋아요 초기화도 필요하면 아래 주석 해제 */}
+          {<button
+            className="CommonFrame"
+            onClick={handleResetLikes}
+            style={{ padding: "10px 16px", background: "#ffefef" }}
+          >
+            좋아요 초기화
+          </button>}
+        </div>
+      </main>
+
+      {/* ✅ 전부 완료 시 바텀 CTA */}
+      {allDone && (
+        <div className="Page04_FooterCTA">
+          <button className="btn primary Page04_NextBtn" onClick={handleNext}>
+            다음 넘어가기
+          </button>
+        </div>
       )}
-    </main>
 
-    <footer className="Pages04_Footer">
-      선호도를 입력하고 맞춤형 여행 초안을 받아보세요!
-    </footer>
-  </div>
-)};
+      <footer className="Pages04_Footer">
+        선호도를 입력하고 맞춤형 여행 초안을 받아보세요!
+      </footer>
+    </div>
+  );
+}
