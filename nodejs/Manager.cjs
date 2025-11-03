@@ -6,9 +6,20 @@
 const sessionData = {
     countryName: "일본",
     countryCode: "JP",
-    questionAnswers: [],
+    questions: ["해변에 있는 휴양지를 원하시나요?","산이나 자연을 즐기고 싶으신가요?","액티비티(스포츠, 레저)를 좋아하시나요?",
+  "도시 관광을 선호하시나요?",
+  "맛집 탐방을 중요하게 생각하시나요?",
+  "역사적 유적지를 좋아하시나요?",
+  "쇼핑을 즐기시나요?",
+  "야경과 야경 명소를 좋아하시나요?",
+  "온천이나 휴식을 중요하게 생각하시나요?",
+  "혼자보다는 사람 많은 곳을 선호하시나요?"],
+    questionAnswers: ["yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes"],
     request: "",
-    
+    recommendation: {
+        typeSummary: "도보 이동과 미식 탐방을 즐기는 타입이에요.",
+        tags: ["미식", "도시", "야경"]
+    },
     categoryProgress: {
         "숙박": false,
         "액티비티": false,
@@ -182,4 +193,5 @@ module.exports = {
     addPage5Verdict,
     getPage6Selections,
     clearPage5Selections,
+
 };
