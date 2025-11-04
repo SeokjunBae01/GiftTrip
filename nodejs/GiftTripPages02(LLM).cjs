@@ -1,4 +1,10 @@
-    const express = require('express');
+// ── GiftTripPages02.cjs 최상단(또는 server.cjs 최상단) ──
+const path = require('path');
+require('dotenv').config({
+  path: path.resolve(__dirname, '../.env'), // nodejs/ 상위의 .env를 명시
+});
+
+const express = require('express');
     const {getData, setData, saveAdditionalRequest} = require('./Manager.cjs');
     const router = express.Router();
 
@@ -33,9 +39,12 @@
                 model: 'gpt-4o-mini',
                 messages: [
                     {role: 'system', content: `너는 여행지를 추천하고 여행 타입을 분석하는 친절한 도우미야.
-                        상냥한 말투로 대답해줘. 아래 입력(질문 10개 + 각 답변 + 추가요청사항)을 바탕으로 1) countryName: 일본, 중국, 대만, 미국, 캐나다, 프랑스, 영국, 독일, 이탈리아, 스페인 중에서만 추천. 한국어 국가명 1개,
+                        상냥한 말투로 대답해줘. 아래 입력(질문 10개 + 각 답변 + 추가요청사항)을 바탕으로
+                        1) countryName: 일본, 중국, 대만, 미국, 캐나다, 프랑스, 영국, 독일, 이탈리아, 스페인 중에서만 추천. 한국어 국가명 1개 
+                        1-1) CountryName에서 받은 이름을 CountryCode로 변환해줘 EX) 일본 : JP, 이탈리아 : IT
                         2) typeSummary: 여행타입을 1~2문장 한국어 요약하고 추천 국가의 관광지 중 사용자의 스타일에 맞는 도시 설명,
-                        3) tags: 한국어 해시태그 5개 내외 배열(기호 # 없이 단어만) 위 3개 키만 포함한 JSON만 반환해. 설명/코드블록/문장 금지. 오직 JSON 한 덩어리만.`},
+                        3) tags: 한국어 해시태그 5개 내외 배열(기호 # 없이 단어만) 위 3개 키만 포함한 JSON만 반환해. 설명/코드블록/문장 금지. 오직 JSON 한 덩어리만.
+                        `},
                     {role: 'user', content: LLMInputText}
                 ],
                 temperature: 0.3,
@@ -46,6 +55,8 @@
             console.log("\n\n[정제된 JSON 결과]", parsed);
             // Manager.cjs에 반영
             setData("countryName", parsed.countryName);
+            console.log("\n받은 컨트리 코드 : ", parsed.countryCode);
+            setData("countryCode", parsed.countryCode);
             setData("recommendation", {
                 typeSummary: parsed.typeSummary,
                 tags: parsed.tags,
