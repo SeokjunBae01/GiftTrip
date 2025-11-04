@@ -160,11 +160,11 @@ export default function GiftTripPages07() {
       {/* 5-2. 메인 컨텐츠 */}
       <main className="Page07_Main">
         <h2 className="Page07_Title">최종 초안</h2>
+        <h3 className="Page07_Subtitle">AI가 생각한 당신의 여행</h3>
+        <div className="Page07_Hype">{hypeText}</div>
 
         {renderContent()}
 
-        <h3 className="Page07_Subtitle">사용자님의 여행에 대하여</h3>
-        <div className="Page07_Hype">{hypeText}</div>
 
         <div className="Page07_Actions">
           <button className="Page07_Btn primary" type="button">공유하기</button>
