@@ -5,34 +5,40 @@ import "../CSS/common.css";
 
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+
+import ChecklistModal from "./ChecklistModal.jsx";
+import "../CSS/ChecklistModal.css"
 // ---------------------------------
 
 export default function GiftTripPages07() {
   // --- 1. React Hooks 및 상태 관리 ---
 
   const location = useLocation();
-  const navigate = useNavigate();
 
-  const { selectedItemIds } = location.state || {};
+  const { selectedItemIds, countryCode } = location.state || {};
 
   const [groupedItems, setGroupedItems] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // --- 추가: PDF로 변환할 DOM 요소를 참조하기 위한 ref ---
   const mainContentRef = useRef(null);
 
   // --- 2. 정적 데이터 ---
-
   const hypeText =
     "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
 
   // --- 3. 데이터 Fetching 및 처리 ---
-
   useEffect(() => {
     if (!selectedItemIds || selectedItemIds.length === 0) {
       setError("선택된 항목이 없습니다. 이전 페이지로 돌아가 다시 선택해주세요.");
+      setIsLoading(false);
+      return;
+    }
+    if (!countryCode) {
+      setError("국가 코드가 누락되었습니다. 이전 페이지부터 다시 시도해주세요.");
       setIsLoading(false);
       return;
     }
@@ -97,7 +103,7 @@ export default function GiftTripPages07() {
     };
 
     fetchDetails();
-  }, [selectedItemIds]);
+  }, [selectedItemIds, countryCode]);
 
   // --- 4. 조건부 UI 렌더링 함수 ---
 
@@ -217,6 +223,8 @@ export default function GiftTripPages07() {
 
 
         <div className="Page07_Actions">
+          
+          {/* 공유하기 버튼 */}
           <button 
             className="Page07_Btn primary" 
             type="button"
@@ -225,9 +233,24 @@ export default function GiftTripPages07() {
           >
             {isDownloading ? "PDF 생성 중..." : "공유하기 (PDF)"}
           </button>
-          <button className="Page07_Btn secondary" type="button">체크리스트 확인</button>
+
+          {/* 체크리스트 버튼 */}
+          <button
+            className="Page07_Btn secondary"
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+          >
+            체크리스트 확인
+          </button>
+
         </div>
       </main>
+      {/* 모달 컴포넌트 렌더링 */}
+      <ChecklistModal
+        show={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        countryCode={countryCode}
+      />
     </div>
   );
 }

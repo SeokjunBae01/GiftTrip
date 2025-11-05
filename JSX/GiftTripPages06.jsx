@@ -71,7 +71,8 @@ export default function MySelectionsPage() {
 
   const handleCreate = () => {
     // 선택된 아이템 id 목록을 다음 페이지로 전달
-    navigate("/page7", { state: { selectedItemIds: selectedItems } });
+    navigate("/page7", { state: { selectedItemIds: selectedItems, countryCode: countryCode } });
+    console.log(selectedItems);
   };
 
   return (
