@@ -1,81 +1,135 @@
+/* ===== Main 영역 ===== */
 .Page05_Main {
   margin-top: 80px;
   display: grid;
-  place-items: center;   /* ✅ 이미지와 버튼 전체 중앙 정렬 */
+  place-items: center;   /* 이미지/버튼 중앙 정렬 */
   gap: 24px;
 }
 
-.Page05_MainImage {
-  width: 540px;             /* ✅ 박스 고정 */
-  height: 300px;            /* ✅ 박스 고정 */
-  object-fit: contain;      /* ✅ 이미지가 잘리지 않고 비율 유지하며 들어감 */
-  display: block;
-  border-radius: 15px;
-  background: #f5f5f5;      /* ✅ 이미지 없는 공간 배경 (선택) */
-  padding: 8px;             /* ✅ 살짝 여백을 줘서 박스 안에 안정적으로 */
-  box-sizing: border-box;   /* ✅ padding 포함 계산 */
-}
-
-.Page05_Action{
+/* 라운드 카드(wrapper) */
+.Page05_ImageCard {
+  position: relative;            /* ★ 제목 오버레이 기준을 카드로 */
+  width: 540px;
+  height: 300px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #fff;
+  border: 1px solid #e9eef3;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.06);
   display: flex;
-  gap: 100px;
-  justify-content: center; /* 버튼들을 수평 중앙 */
+  align-items: center;
+  justify-content: center;
 }
 
-.Page05_BtnLike{
-  padding: 8px 36px;
-  background: #72ff6e; 
+
+/* 실제 이미지: 카드에 꽉 차게 */
+.Page05_MainImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;                 /* 살짝 크롭되어도 깔끔 */
+  display: block;
+}
+
+/* 필요 시 크롭 없이 쓰는 변형 */
+.Page05_MainImage--contain { 
+  object-fit: contain; 
+  background: #f7f9fb; 
+}
+
+.Page05_Action {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.Page05_BtnLike,
+.Page05_BtnDisLike {
+  padding: 10px 28px;
+  border-radius: 10px;
+  font-weight: 600;
+  border: 1px solid transparent;
   cursor: pointer;
+  transition: transform .08s ease, box-shadow .2s ease, border-color .2s ease;
 }
 
-.Page05_BtnDisLike{
-  padding: 8px 36px;
-  background: #fe9898; 
-  cursor: pointer;
+.Page05_BtnLike {
+  background: #72ff6e;
+  border-color: #3fe03b;
+}
+.Page05_BtnDisLike {
+  background: #fe9898;
+  border-color: #f06f6f;
+}
+.Page05_BtnLike:hover,
+.Page05_BtnDisLike:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(0,0,0,.08);
+}
+.Page05_BtnLike:disabled,
+.Page05_BtnDisLike:disabled {
+  opacity: .6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
-/* Reviews */
+/* 레이아웃 컨테이너: 카드-리뷰 수직 정렬 맞추기 */
 .Page05_Container {
-  display: flex;           /* 가로 방향 정렬 */
-  gap: 32px;               /* 사진과 리뷰 사이 간격 */
-  align-items: flex-start; /* 높이 기준 상단 정렬 */
-  margin-top: 100px;       /* 페이지 여백 */
-  justify-content: center; /* 전체 중앙 정렬 */
+  display:flex;
+  gap:32px;
+  align-items:center;            /* ★ 같이 가운데 정렬 */
+  margin-top:100px;
+  justify-content:center;
+  padding-bottom:120px;
 }
 
+/* 리뷰 사이드: 과한 위여백 제거 */
 .Page05_Review {
-  width: 30%;
-  display: grid;
-  gap: 24px;
-  margin-left: 50px;
-  margin-top: 100px;
+  width:30%;
+  min-width:320px;
+  display:grid;
+  gap:16px;
+  margin-left:16px;
+  margin-top:0;                  /* ★ 위여백 제거 */
+  align-self:center;             /* 컨테이너 기준 수직 중앙 고정 */
 }
 
 .Page05_ReviewBox {
-  background: #eeeeee;
-  border-radius: 8px;
-  padding: 16px;
+  background: #f6f8fb;            /* 더 밝은 톤 */
+  border-radius: 12px;
+  padding: 16px 18px;
   min-height: 90px;
   display: grid;
-  align-content: center;
-  border: 1px solid #e1e1e1;
+  align-content: start;
+  border: 1px solid #e6edf3;
 }
 
+/* 제목 */
 .Page05_ReviewBoxTitle {
-  color: #8f99a3;
-  font-weight: 700;
+  color: #7e8da1;
+  font-weight: 800;
   text-transform: lowercase;
 }
 
+/* 기본 문장 */
 .Page05_ReviewDesc {
   margin-top: 6px;
-  color: #9aa3ad;
+  color: #8f9aa6;
   font-size: 13px;
 }
 
-/* Footer progress */
-/* 하단 중앙 고정 */
-/* 하단 고정 */
+/* 실제 리뷰 리스트 */
+.Page05_ReviewList {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  color: #6b7680;
+  list-style: disc;
+}
+
+/* ===== 하단 진행 도트 ===== */
 .Page05_Footer {
   position: fixed;
   left: 50%;
@@ -84,7 +138,6 @@
   z-index: 9999;
 }
 
-/* ✅ 무조건 가로 한 줄 */
 .Page05_Process {
   display: flex;
   flex-direction: row;
@@ -95,7 +148,6 @@
   white-space: nowrap;
 }
 
-/* ✅ 기본 도트: 회색 */
 .Page05_Dot {
   width: 22px;
   height: 22px;
@@ -103,11 +155,26 @@
   background: #e0e0e0;
   border: 2px solid #bdbdbd;
   flex: 0 0 22px;
-  transition: background-color 200ms ease, border-color 200ms ease;
+  transition: background-color 200ms ease, border-color 200ms ease, transform .08s ease;
 }
 
-/* ✅ 완료된 도트: 파란색 */
 .Page05_DotDone {
   background: #00d0ff;
   border-color: #0080ff;
+}
+
+/* 제목 오버레이 — 사진 위에 붙이기 */
+.Page05_ImageTitle{
+  position:absolute;
+  bottom:12px;
+  left:16px;
+  z-index:2;
+  color:#fff;
+  font-weight:700;
+  font-size:16px;
+  text-shadow:0 0 6px rgba(0,0,0,.6);
+  pointer-events: none;          /* 클릭 방해 X */
+  padding:6px 10px;              /* 가독성 ↑ */
+  border-radius:10px;
+  background: rgba(0,0,0,.35);
 }
