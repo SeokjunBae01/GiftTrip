@@ -2,12 +2,8 @@
 
 const express = require("express");
 const router = express.Router();
-
-// --- 1. 의존성 및 헬퍼 함수 ---
-
-// Page 06에서 사용했던 'LikedStore'를 그대로 사용합니다.
-// (메모리 DB 또는 임시 저장소 역할을 하는 모듈)
 const { getLikes } = require("./LikedStore.cjs");
+const { getData } = require("./Manager.cjs");
 
 /**
  * Page 06에서 사용했던 헬퍼 함수
@@ -25,15 +21,6 @@ function fileNameFromUrl(url) {
 }
 
 // --- 2. API 엔드포인트 정의 ---
-
-/**
- * POST /api/page7/details
- * - Request Body: { ids: ["id1", "id2", ...] }
- * - Response: { success: true, items: [{...details1...}, {...details2...}] }
- *
- * Page 07 (최종 초안 페이지)에서 요청한 ID 목록을 받아,
- * 각 ID에 해당하는 아이템의 상세 정보를 반환합니다.
- */
 router.post("/page7/details", (req, res) => {
   try {
     // --- 2-1. 요청 본문(Body) 파싱 및 유효성 검사 ---
@@ -69,8 +56,11 @@ router.post("/page7/details", (req, res) => {
       link: x.link || x.sourceUrl || "#", // 상세 링크 추가
     }));
 
+    const sessionData = getData();
+    const countryName = sessionData.countryName;
+
     // --- 2-4. 성공 응답 전송 ---
-    return res.json({ success: true, items: result });
+    return res.json({ success: true, items: result, countryName: countryName });
 
   } catch (e) {
     // --- 2-5. 서버 오류 처리 ---
