@@ -52,19 +52,28 @@
 }
 
 .Page00_OptionItem {
-  padding: 10px 15px;
-  text-align: left;
-  font-size: 14px;
-  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
   cursor: pointer;
-  transition: background-color 0.15s;
 }
 
 .Page00_OptionItem:hover {
-  background-color: #f0f0f0;
+  background: #c2d9fd;
 }
 
-.Page00_OptionItem:not(:last-child) {
-  border-bottom: 1px solid #eee;
+/* 이미지 국기 사용 시 */
+.Page00_OptionFlagImg {
+  width: 24px;
+  height: 18px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 1px solid #e4e4e4;
+  display: block;
 }
 
+.Page00_OptionName {
+  font-size: 14px;
+  color: #333;
+}
