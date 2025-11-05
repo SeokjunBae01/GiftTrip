@@ -7,7 +7,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
 import ChecklistModal from "./ChecklistModal.jsx";
-import "../CSS/ChecklistModal.css"
+import "../CSS/ChecklistModal.css";
 // ---------------------------------
 
 export default function GiftTripPages07() {
@@ -22,6 +22,7 @@ export default function GiftTripPages07() {
   const [error, setError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [countryName, setCountryName] = useState("");
   
   // --- 추가: PDF로 변환할 DOM 요소를 참조하기 위한 ref ---
   const mainContentRef = useRef(null);
@@ -94,6 +95,8 @@ export default function GiftTripPages07() {
         setGroupedItems(orderedGroupedItems);
         //*****************************************
 
+        setCountryName(data.countryName || "");
+
       } catch (e) {
         console.error("[Page07] fetchDetails error:", e);
         setError("선택한 항목의 세부 정보를 불러오는 데 실패했습니다.");
@@ -137,7 +140,7 @@ export default function GiftTripPages07() {
                   <h4 className="Page07_CardTitle">{item.name}</h4>
                   <a
                     className="Page07_Link"
-                    href={item.link || "#"}
+                    href={getDynamicLink(item)}
                     target="_blank"
                     rel="noreferrer"
                   >
@@ -151,6 +154,35 @@ export default function GiftTripPages07() {
         </div>
       </section>
     ));
+  };
+
+// --- 동적 링크 생성 함수 ---
+  const getDynamicLink = (item) => {
+    // 1. 기본 검색 URL
+    const baseUrlGoogle = "https://www.google.com/search?q=";
+    const baseUrlYouTube = "https://www.youtube.com/results?search_query=";
+
+    // 2. 검색어 생성
+    const searchTerm = encodeURIComponent(`${countryName || ""} ${item.name} `.trim());
+
+    // 3. 카테고리(item.type)에 따라 다른 URL 반환
+    switch (item.type) {
+      case "숙박":
+      case "액티비티":
+        return `${baseUrlYouTube}${searchTerm}`;
+
+      case "음식":
+      case "인기 스팟":
+        return `${baseUrlGoogle}${searchTerm}`;
+
+      default:
+        // 백엔드가 제공한 'item.link'가 유효하다면 그것을 우선 사용
+        if (item.link && item.link !== "#") {
+          return item.link;
+        }
+        // 그 외에는 기본값으로 구글 검색
+        return `${baseUrlGoogle}${searchTerm}`;
+    }
   };
   
 // --- 수정: PDF 다운로드 핸들러 (한 페이지 버전) ---
