@@ -1,151 +1,296 @@
-// nodejs/GiftTripPages05.cjs
-require("dotenv").config();
+// GiftTripPages05.jsx
+import { useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect, useMemo } from "react";
+import { useAppData } from "../JSX/Data.jsx";
+import "../CSS/GiftTripPages05.css";
+import "../CSS/Common.css";
 
-const express = require("express");
-const router  = express.Router();
-const { addLike, addDislike, clearLikes } = require("./LikedStore.cjs");
-const {
-  getReviewsGPTCached,
-  extractTitleFromUrl,
-  normalizeTitle,
-  normalizeCategoryKey,
-  fallbackReviews,
-  clearReviewCache,
-  cacheStats,
-} = require("./ReviewEngine.cjs");
+export default function GiftTripPages05() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const { countryCode, loading } = useAppData(); // JP/KR 등
 
-/* ===================== 좋아요 / 싫어요 / 리셋 ===================== */
+  // Page04에서 넘어온 값 (한글 이름)
+  const { categoryName } = location.state || {};
 
-router.post("/page5/like", (req, res) => {
-  try {
-    let { countryCode, categoryKey, imageUrl } = req.body || {};
-    if (!categoryKey || !imageUrl) {
-      return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
+  // 한→영 매핑 (폴더/카테고리 키와 정확히 일치해야 함)
+  const apiCategoryKey = useMemo(() => {
+    const map = { 숙박: "Stay", 액티비티: "Activity", 음식: "Food", 인기스팟: "Spots" };
+    return map[categoryName] || categoryName || "";
+  }, [categoryName]);
+
+  const [pictures, setPictures] = useState([]); // 이미지 배열(URL)
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
+
+  // 이미지 제목 상태
+  const [imageTitle, setImageTitle] = useState("");
+
+  // 리뷰 상태
+  const [goodReviews, setGoodReviews] = useState([]);
+  const [badReviews, setBadReviews] = useState([]);
+  const [reviewLoading, setReviewLoading] = useState(false);
+
+  // 필수 파라미터 없으면 되돌리기
+  useEffect(() => {
+    if (!loading && !categoryName) navigate("/page4");
+  }, [loading, categoryName, navigate]);
+
+  // 이미지 배열 불러오기 (UpLoadingImages 엔드포인트 사용)
+  useEffect(() => {
+    if (loading) return;
+    if (!countryCode) {
+      setErrorMsg("국가 코드를 불러오지 못했습니다.");
+      return;
     }
-    categoryKey = normalizeCategoryKey(categoryKey);
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (!allowed.has(categoryKey)) {
-      return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
-    }
-
-    const id = addLike({ countryCode, categoryKey, imageUrl });
-    if (!id) return res.status(500).json({ success: false, error: "저장 실패" });
-    return res.json({ success: true, id });
-  } catch (e) {
-    console.error("[/page5/like] error:", e);
-    return res.status(500).json({ success: false, error: "서버 오류" });
-  }
-});
-
-router.post("/page5/dislike", (req, res) => {
-  try {
-    let { countryCode, categoryKey, imageUrl } = req.body || {};
-    if (!categoryKey || !imageUrl) {
-      return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
-    }
-    categoryKey = normalizeCategoryKey(categoryKey);
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (!allowed.has(categoryKey)) {
-      return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
-    }
-
-    addDislike({ countryCode, categoryKey, imageUrl });
-    return res.json({ success: true });
-  } catch (e) {
-    console.error("[/page5/dislike] error:", e);
-    return res.status(500).json({ success: false, error: "서버 오류" });
-  }
-});
-
-router.post("/page5/likes/reset", (req, res) => {
-  try {
-    clearLikes();
-    return res.json({ success: true, cleared: true });
-  } catch (e) {
-    console.error("[/page5/likes/reset] error:", e);
-    return res.status(500).json({ success: false, error: "초기화 실패" });
-  }
-});
-
-/* ===================== 리뷰(GPT + 캐시) ===================== */
-
-router.post("/page5/reviews", async (req, res) => {
-  try {
-    const { imageUrl, countryCode } = req.body || {};
-    let { categoryKey } = req.body || {};
-    const hasUrl = !!imageUrl;
-
-    categoryKey = normalizeCategoryKey(categoryKey);
-    const raw   = extractTitleFromUrl(imageUrl || "");
-    const title = normalizeTitle(raw);
-
-    console.log("[/page5/reviews] IN:", { hasUrl, countryCode, categoryKey, title });
-
-    if (!imageUrl) {
-      return res.status(400).json({ success: false, error: "imageUrl는 필수입니다." });
+    if (!apiCategoryKey) {
+      setErrorMsg("카테고리 정보가 없습니다.");
+      return;
     }
 
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (categoryKey && !allowed.has(categoryKey)) {
-      return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
+    const ctrl = new AbortController();
+
+    (async () => {
+      try {
+        setErrorMsg("");
+        const url = `http://localhost:3000/api/page4/pictures/${countryCode}/${apiCategoryKey}`;
+        console.log("[Page05] fetch:", url);
+        const res = await fetch(url, { signal: ctrl.signal });
+        if (!res.ok) throw new Error(`이미지 API 실패: ${res.status}`);
+        const data = await res.json(); // { success, country, category, pictures: [...] }
+        const imgs = data.pictures || [];
+        setPictures(imgs);
+        setCurrentIndex(0);
+
+        if (imgs.length === 0) {
+          setErrorMsg("이미지가 없습니다.");
+        }
+      } catch (err) {
+        if (err.name !== "AbortError") {
+          console.error("[Page05] 이미지 로드 실패:", err);
+          setErrorMsg("이미지를 불러오지 못했습니다.");
+          setPictures([]);
+        }
+      }
+    })();
+
+    return () => ctrl.abort();
+  }, [loading, countryCode, apiCategoryKey]);
+
+  // ✅ 현재 이미지 파일명 → 제목 추출(확장자 제거, _,- 를 공백으로)
+  useEffect(() => {
+    if (!pictures.length) {
+      setImageTitle("");
+      return;
     }
+    const url = pictures[currentIndex];
+    if (!url) return;
 
-    // 🔥 캐시된 GPT 결과 사용 (미스 시 GPT 호출 후 저장)
-    const result = await getReviewsGPTCached({
-      title,
-      imageUrl,
-      countryCode,
-      categoryKey,
-    });
+    try {
+      const decoded = decodeURIComponent(url);
+      const base = (decoded.split("/").pop() || "").split("?")[0];
+      const noExt = base.replace(/\.[^/.]+$/, "");
+      const pretty = noExt.replace(/[_-]+/g, " ").trim();
+      setImageTitle(pretty);
+    } catch {
+      setImageTitle("");
+    }
+  }, [pictures, currentIndex]);
 
-    // 2문장 보장
-    const to2 = (arr, fb) => (Array.isArray(arr) && arr.length === 2 ? arr : fb);
-    const safe = fallbackReviews(result.title);
+  // 현재 이미지가 바뀔 때 리뷰 조회
+  useEffect(() => {
+    if (!pictures.length) {
+      setGoodReviews([]);
+      setBadReviews([]);
+      return;
+    }
+    const img = pictures[currentIndex];
+    if (!img) return;
 
-    const out = {
-      title: result.title,
-      positives: to2(result.positives, safe.positives),
-      negatives: to2(result.negatives, safe.negatives),
-      provider: result.provider || "gpt",
-      lang: "ko",
+    const ctrl = new AbortController();
+
+    (async () => {
+      try {
+        setReviewLoading(true);
+        const res = await fetch("http://localhost:3000/api/page5/reviews", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            imageUrl: img,
+            countryCode,
+            categoryKey: apiCategoryKey,
+          }),
+          signal: ctrl.signal,
+        });
+        if (!res.ok) throw new Error(`리뷰 API 실패: ${res.status}`);
+        const data = await res.json(); // { success, title, positives, negatives, ... }
+        if (!data.success) throw new Error("리뷰 조회 실패");
+        setGoodReviews(data.positives || []);
+        setBadReviews(data.negatives || []);
+      } catch (e) {
+        if (e.name !== "AbortError") {
+          console.error("[Page05] 리뷰 불러오기 실패:", e);
+          setGoodReviews([]);
+          setBadReviews([]);
+        }
+      } finally {
+        setReviewLoading(false);
+      }
+    })();
+
+    return () => ctrl.abort();
+  }, [pictures, currentIndex, countryCode, apiCategoryKey]);
+
+  // 완료 상태 저장
+  const markCompleted = () => {
+    const prev = JSON.parse(localStorage.getItem("completedCategories")) || [];
+    const next = Array.from(new Set([...prev, categoryName].filter(Boolean)));
+    localStorage.setItem("completedCategories", JSON.stringify(next));
+  };
+
+  // 진행 공통
+  const advance = () => {
+    if (currentIndex < pictures.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
+    } else {
+      // 마지막 이미지까지 판정했으면 완료 처리 후 Page04로 복귀
+      markCompleted();
+      navigate("/page4");
+    }
+  };
+
+  const sendVerdict = async (verdict) => {
+    const payload = {
+      countryCode, // "JP"
+      categoryKey: apiCategoryKey, // "Stay" | "Activity" | ...
+      imageUrl: pictures[currentIndex],
     };
 
-    console.log("[/page5/reviews] OUT:", {
-      title: out.title,
-      provider: out.provider,
-      pos: out.positives.length,
-      neg: out.negatives.length,
+    const res = await fetch(`http://localhost:3000/api/page5/${verdict}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
     });
 
-    return res.json({ success: true, ...out });
-  } catch (e) {
-    console.error("[/page5/reviews] error:", e);
-    return res.status(500).json({ success: false, error: "리뷰 조회 실패" });
-  }
-});
+    if (!res.ok) throw new Error(`API 실패: ${res.status}`);
+    return res.json();
+  };
 
-/* ===================== 캐시 관리 유틸(선택) ===================== */
+  const handleLike = async () => {
+    try {
+      await sendVerdict("like");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      advance(); // 다음 이미지로
+    }
+  };
 
-// 캐시 비우기
-router.post("/page5/reviews/cache/clear", async (req, res) => {
-  try {
-    const result = await clearReviewCache();
-    return res.json({ success: true, ...result });
-  } catch (e) {
-    console.error("[/page5/reviews/cache/clear] error:", e);
-    return res.status(500).json({ success: false, error: "캐시 삭제 실패" });
-  }
-});
+  const handleDislike = async () => {
+    try {
+      await sendVerdict("dislike");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      advance();
+    }
+  };
 
-// 캐시 상태 확인
-router.get("/page5/reviews/cache/stats", async (req, res) => {
-  try {
-    const s = await cacheStats();
-    return res.json({ success: true, ...s });
-  } catch (e) {
-    console.error("[/page5/reviews/cache/stats] error:", e);
-    return res.status(500).json({ success: false, error: "캐시 상태 조회 실패" });
-  }
-});
+  return (
+    <div className="CommonPage">
+      <header className="CommonHeader">
+        <h1 className="CommonLogo CommonLogo_Left">Gift Trip</h1>
+        <button className="CommonLoginBtn">로그인</button>
+      </header>
 
-module.exports = router;
+      <main className="Page05_Container">
+        <section className="Page05_Main">
+          {loading ? (
+            <p>불러오는 중...</p>
+          ) : errorMsg ? (
+            <p>{errorMsg}</p>
+          ) : pictures.length > 0 ? (
+            <div className="Page05_ImageCard">
+              {/* ✅ 제목 오버레이 */}
+              {imageTitle && <div className="Page05_ImageTitle">{imageTitle}</div>}
+
+              <img
+                src={pictures[currentIndex]}
+                alt={`${categoryName || apiCategoryKey} 이미지`}
+                className="Page05_MainImage"
+                onError={(e) => {
+                  // 깨진 이미지면 다음으로 자동 진행
+                  console.warn("[Page05] 이미지 에러, 다음으로 진행:", pictures[currentIndex]);
+                  e.currentTarget.style.display = "none";
+                  advance();
+                }}
+              />
+            </div>
+          ) : (
+            <p>이미지가 없습니다.</p>
+          )}
+
+          <div className="Page05_Action">
+            <button
+              className="CommonFrame Page05_BtnLike"
+              onClick={handleLike}
+              disabled={!pictures.length}
+            >
+              좋아요
+            </button>
+            <button
+              className="CommonFrame Page05_BtnDisLike"
+              onClick={handleDislike}
+              disabled={!pictures.length}
+            >
+              싫어요
+            </button>
+          </div>
+        </section>
+
+        <aside className="Page05_Review">
+          <div className="Page05_ReviewBox">
+            <span className="Page05_ReviewBoxTitle">good reviews</span>
+            {reviewLoading ? (
+              <p className="Page05_ReviewDesc">불러오는 중...</p>
+            ) : goodReviews.length ? (
+              <ul className="Page05_ReviewList">
+                {goodReviews.map((t, i) => (
+                  <li key={`g${i}`}>{t}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="Page05_ReviewDesc">긍정 리뷰가 아직 없어요.</p>
+            )}
+          </div>
+
+          <div className="Page05_ReviewBox">
+            <span className="Page05_ReviewBoxTitle">bad reviews</span>
+            {reviewLoading ? (
+              <p className="Page05_ReviewDesc">불러오는 중...</p>
+            ) : badReviews.length ? (
+              <ul className="Page05_ReviewList">
+                {badReviews.map((t, i) => (
+                  <li key={`b${i}`}>{t}</li>
+                ))}
+              </ul>
+            ) : (
+              <p className="Page05_ReviewDesc">부정 리뷰가 아직 없어요.</p>
+            )}
+          </div>
+        </aside>
+      </main>
+
+      <footer className="Page05_Footer">
+        <div className="Page05_Process" aria-label="progress">
+          {pictures.map((_, i) => (
+            <div
+              key={i}
+              className={`Page05_Dot ${i <= currentIndex ? "Page05_DotDone" : ""}`}
+            />
+          ))}
+        </div>
+      </footer>
+    </div>
+  );
+}
