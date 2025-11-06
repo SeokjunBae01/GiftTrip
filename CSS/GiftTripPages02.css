@@ -42,9 +42,10 @@
 
 /* 카드 */
 .pg02 .card {
-  max-width: 680px;
-  margin: 40px auto 0;
-  padding: 28px;
+  width: 60%;
+  min-height: 400px;
+  margin: 100px auto 0;
+  padding: 40px;
   border: 1px solid var(--line);
   border-radius: 22px;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
@@ -54,7 +55,7 @@
   text-align: center;
   color: var(--muted);
   font-size: 14px;
-  margin: 0 0 16px;
+  margin: 0 0 48px;
 }
 
 /* 입력 영역 */
@@ -67,6 +68,7 @@
 .pg02 .input {
   width: 95%;
   padding: 14px 16px;
+  height: 80px;
   border-radius: 16px;
   font-size: 16px;
   border: 1px solid var(--line);
@@ -83,22 +85,23 @@
 .pg02 .hint {
   margin-top: 8px;
   color: var(--muted);
-  font-size: 13px;
+  font-size: 16px;
 }
 
 /* 액션 */
 .pg02 .actions {
   display: flex;
   justify-content: center;
-  margin-top: 18px;
+  margin-top: 36px;
 }
 
 .pg02 .cta {
-  padding: 12px 22px;
+  padding: 20px 28px;
   border-radius: 16px;
   background: var(--brand);
   color: #fff;
   border: none;
+  font-size: 20px;
   font-weight: 700;
   cursor: pointer;
 }
