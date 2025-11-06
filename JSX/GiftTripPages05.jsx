@@ -8,16 +8,22 @@ import "../CSS/Common.css";
 export default function GiftTripPages05() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { countryCode, loading } = useAppData(); // JP/KR 등
+  const { countryCode, loading } = useAppData(); // JP/KR 등 (컨텍스트)
 
-  // Page04에서 넘어온 값 (한글 이름)
-  const { categoryName } = location.state || {};
+  // Page04에서 넘어온 값
+  const { categoryName, selectedCode } = location.state || {};
 
-  // 한→영 매핑 (폴더/카테고리 키와 정확히 일치해야 함)
+  // 한→영 매핑 (폴더/카테고리 키와 정확히 일치)
   const apiCategoryKey = useMemo(() => {
-    const map = { 숙박: "Stay", 액티비티: "Activity", 음식: "Food", 인기스팟: "Spots" };
+    const map = { 도시: "Stay", 액티비티: "Activity", 음식: "Food", 인기스팟: "Spots" };
     return map[categoryName] || categoryName || "";
   }, [categoryName]);
+
+  // ✅ 국가코드 결정: state 우선, 없으면 context
+  const effectiveCode = useMemo(
+    () => selectedCode || countryCode,
+    [selectedCode, countryCode]
+  );
 
   const [pictures, setPictures] = useState([]); // 이미지 배열(URL)
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -25,6 +31,7 @@ export default function GiftTripPages05() {
 
   // 이미지 제목 상태
   const [imageTitle, setImageTitle] = useState("");
+  const [imageDesc, setImageDesc] = useState(""); // (필요시 확장 가능, 지금은 표시 안 함)
 
   // 리뷰 상태
   const [goodReviews, setGoodReviews] = useState([]);
@@ -39,7 +46,7 @@ export default function GiftTripPages05() {
   // 이미지 배열 불러오기 (UpLoadingImages 엔드포인트 사용)
   useEffect(() => {
     if (loading) return;
-    if (!countryCode) {
+    if (!effectiveCode) {
       setErrorMsg("국가 코드를 불러오지 못했습니다.");
       return;
     }
@@ -53,7 +60,7 @@ export default function GiftTripPages05() {
     (async () => {
       try {
         setErrorMsg("");
-        const url = `http://localhost:3000/api/page4/pictures/${countryCode}/${apiCategoryKey}`;
+        const url = `http://localhost:3000/api/page4/pictures/${effectiveCode}/${apiCategoryKey}`;
         console.log("[Page05] fetch:", url);
         const res = await fetch(url, { signal: ctrl.signal });
         if (!res.ok) throw new Error(`이미지 API 실패: ${res.status}`);
@@ -75,27 +82,36 @@ export default function GiftTripPages05() {
     })();
 
     return () => ctrl.abort();
-  }, [loading, countryCode, apiCategoryKey]);
+  }, [loading, effectiveCode, apiCategoryKey]); // ✅ countryCode → effectiveCode
 
   // ✅ 현재 이미지 파일명 → 제목 추출(확장자 제거, _,- 를 공백으로)
   useEffect(() => {
     if (!pictures.length) {
       setImageTitle("");
+      setImageDesc("");
       return;
     }
     const url = pictures[currentIndex];
-    if (!url) return;
+    if (!url) return; 
 
     try {
       const decoded = decodeURIComponent(url);
       const base = (decoded.split("/").pop() || "").split("?")[0];
-      const noExt = base.replace(/\.[^/.]+$/, "");
-      const pretty = noExt.replace(/[_-]+/g, " ").trim();
-      setImageTitle(pretty);
+      const noExt = base.replace(/\.[^/.]+$/, ""); // 확장자 제거
+      const [rawTitle, ...rest] = noExt.split("-");
+      const title = (rawTitle || "").trim();
+      const desc = (rest.join("-") || "").trim(); // '-'가 여러개여도 뒤쪽 전부 설명으로  
+
+      setImageTitle(title);   // ✅ 제목만 노출
+      setImageDesc(desc);     // (지금은 미노출)
     } catch {
       setImageTitle("");
+      setImageDesc("");
     }
-  }, [pictures, currentIndex]);
+  }, [pictures, currentIndex]); 
+
+  // ⬇️ 렌더링: 오버레이에는 제목만
+  {imageTitle && <div className="Page05_ImageTitle">{imageTitle}</div>}
 
   // 현재 이미지가 바뀔 때 리뷰 조회
   useEffect(() => {
@@ -117,7 +133,7 @@ export default function GiftTripPages05() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             imageUrl: img,
-            countryCode,
+            countryCode: effectiveCode,   // ✅ 여기도 effectiveCode
             categoryKey: apiCategoryKey,
           }),
           signal: ctrl.signal,
@@ -139,7 +155,7 @@ export default function GiftTripPages05() {
     })();
 
     return () => ctrl.abort();
-  }, [pictures, currentIndex, countryCode, apiCategoryKey]);
+  }, [pictures, currentIndex, effectiveCode, apiCategoryKey]); // ✅ 의존성 교체
 
   // 완료 상태 저장
   const markCompleted = () => {
@@ -153,16 +169,17 @@ export default function GiftTripPages05() {
     if (currentIndex < pictures.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
-      // 마지막 이미지까지 판정했으면 완료 처리 후 Page04로 복귀
       markCompleted();
-      navigate("/page4");
+      navigate("/page4", {
+        state: { selectedCode: effectiveCode },   // ✅ 꼭 싣기
+      });
     }
   };
 
   const sendVerdict = async (verdict) => {
     const payload = {
-      countryCode, // "JP"
-      categoryKey: apiCategoryKey, // "Stay" | "Activity" | ...
+      countryCode: effectiveCode,        // ✅ 여기도 effectiveCode
+      categoryKey: apiCategoryKey,       // "Stay" | "Activity" | ...
       imageUrl: pictures[currentIndex],
     };
 
