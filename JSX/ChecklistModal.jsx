@@ -2,17 +2,11 @@ import React from "react";
 import "../CSS/ChecklistModal.css";
 import { checklistData } from "./ChecklistData.jsx";
 
-export default function ChecklistModal({ show, onClose, countryCode }) {
-  // show가 false면 아무것도 렌더링하지 않음
-  if (!show) {
-    return null;
-  }
-
+// 다운로드 및 체크리스트 확인가능하도록
+export function ChecklistContent({ countryCode }) {
   // 1. 공통 준비물 데이터
   const commonData = checklistData.common;
-
   // 2. 국가 코드에 맞는 국가별 준비물 데이터
-  //    (countryCode가 'JP'면 'JP' 데이터, 없으면 null)
   const countryData = countryCode ? checklistData.countries[countryCode] : null;
 
   // 팝업 내부 렌더링
@@ -47,27 +41,39 @@ export default function ChecklistModal({ show, onClose, countryCode }) {
   };
 
   return (
-    // 모달 배경 (클릭 시 닫힘)
+    // <React.Fragment>로 감싸서 내용만 반환
+    <React.Fragment>
+      {/* 1. 공통 준비물 */}
+      <h3>{commonData.title}</h3>
+      <ul>
+        {commonData.items.map((item, index) => (
+          <li key={index}>{item}</li>
+        ))}
+      </ul>
+
+      <hr style={{ margin: '20px 0', border: 'none', borderTop: '1px solid #eee' }} />
+
+      {/* 2. 국가별 준비물 */}
+      {renderCountryContent()}
+    </React.Fragment>
+  );
+}
+
+// 3. 기존 default export는 ChecklistContent 사용하도록 수정
+export default function ChecklistModal({ show, onClose, countryCode }) {
+  if (!show) {
+    return null;
+  }
+
+  return (
     <div className="ModalOverlay" onClick={onClose}>
-      
-      {/* 모달 본체 (이벤트 버블링 차단) */}
       <div className="ModalContent" onClick={(e) => e.stopPropagation()}>
-        
-        {/* 닫기 버튼 */}
         <button className="ModalCloseBtn" onClick={onClose}>
           &times;
         </button>
 
-        {/* 1. 공통 준비물 */}
-        <h3>{commonData.title}</h3>
-        <ul>
-          {commonData.items.map((item, index) => (
-            <li key={index}>{item}</li>
-          ))}
-        </ul>
-
-        {/* 2. 국가별 준비물 */}
-        {renderCountryContent()}
+        {/* 4. 위에서 만든 알맹이 컴포넌트 호출. */}
+        <ChecklistContent countryCode={countryCode} />
 
       </div>
     </div>
