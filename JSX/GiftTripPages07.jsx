@@ -6,32 +6,25 @@ import "../CSS/common.css";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
-import ChecklistModal from "./ChecklistModal.jsx";
+import ChecklistModal, { ChecklistContent } from "./ChecklistModal.jsx";
 import "../CSS/ChecklistModal.css";
 // ---------------------------------
 
 export default function GiftTripPages07() {
-  // --- 1. React Hooks 및 상태 관리 ---
-
   const location = useLocation();
-
   const { selectedItemIds, countryCode } = location.state || {};
-
   const [groupedItems, setGroupedItems] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [countryName, setCountryName] = useState("");
-  
-  // --- 추가: PDF로 변환할 DOM 요소를 참조하기 위한 ref ---
   const mainContentRef = useRef(null);
 
-  // --- 2. 정적 데이터 ---
   const hypeText =
     "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
 
-  // --- 3. 데이터 Fetching 및 처리 ---
+  // --- 1. 데이터 Fetching 및 처리 ---
   useEffect(() => {
     if (!selectedItemIds || selectedItemIds.length === 0) {
       setError("선택된 항목이 없습니다. 이전 페이지로 돌아가 다시 선택해주세요.");
@@ -108,7 +101,7 @@ export default function GiftTripPages07() {
     fetchDetails();
   }, [selectedItemIds, countryCode]);
 
-  // --- 4. 조건부 UI 렌더링 함수 ---
+  // --- 2. 조건부 UI 렌더링 함수 ---
 
   const renderContent = () => {
     if (isLoading) {
@@ -156,16 +149,16 @@ export default function GiftTripPages07() {
     ));
   };
 
-// --- 동적 링크 생성 함수 ---
+// --- 3. 동적 링크 생성 함수 ---
   const getDynamicLink = (item) => {
-    // 1. 기본 검색 URL
+    // 3-1. 기본 검색 URL
     const baseUrlGoogle = "https://www.google.com/search?q=";
     const baseUrlYouTube = "https://www.youtube.com/results?search_query=";
 
-    // 2. 검색어 생성
+    // 3-2. 검색어 생성
     const searchTerm = encodeURIComponent(`${countryName || ""} ${item.name} `.trim());
 
-    // 3. 카테고리(item.type)에 따라 다른 URL 반환
+    // 3-3. 카테고리(item.type)에 따라 다른 URL 반환
     switch (item.type) {
       case "숙박":
       case "액티비티":
@@ -185,35 +178,32 @@ export default function GiftTripPages07() {
     }
   };
   
-// --- 수정: PDF 다운로드 핸들러 (한 페이지 버전) ---
+// --- 4. PDF 다운로드 핸들러 ---
   const handlePdfDownload = async () => {
-    // 1. PDF로 만들 DOM 요소를 가져옵니다.
+    // 4-1. PDF로 만들 DOM 요소 가져오기
     const element = mainContentRef.current;
     if (!element) return;
 
     setIsDownloading(true);
+    document.body.classList.add("pdf-capturing");
 
     try {
-      // 2. html2canvas로 DOM을 캔버스(이미지)로 변환
+      // 4-2. html2canvas로 DOM을 캔버스(이미지)로 변환
       const canvas = await html2canvas(element, { 
         useCORS: true,
-        scale: 2 // 해상도를 2배로 높여 품질 개선
+        scale: 2
       }); 
 
-      // 3. 캔버스에서 이미지 데이터(Data URL) 추출 (jspdf 사용가능하도록)
+      // 4-3. 캔버스에서 이미지 데이터(Data URL) 추출 (jspdf 사용가능하도록)
       const imgData = canvas.toDataURL("image/png");
-
-      // 4. 캔버스 사이즈 조절
       const imgWidthPx = canvas.width;
       const imgHeightPx = canvas.height;
-
       // (임시 jsPDF 객체를 만들어 A4 너비 값을 mm 단위로 가져옴)
       const pdfWidthMm = new jsPDF().internal.pageSize.getWidth();
-
       const ratio = imgHeightPx / imgWidthPx;
       const pdfHeightMm = pdfWidthMm * ratio;
 
-      // 8. jsPDF 객체 생성 시, format에 [너비, 높이]를 배열로 전달하여
+      // 4-4. jsPDF 객체 생성 시, format에 [너비, 높이]를 배열로 전달하여
       //      "세로로 긴" 커스텀 용지 크기를 지정
       const pdf = new jsPDF({
         orientation: "p", // "p" (portrait, 세로)
@@ -221,10 +211,8 @@ export default function GiftTripPages07() {
         format: [pdfWidthMm, pdfHeightMm] // [너비, 높이]
       });
       
-      // 9. (0, 0) 위치에서 시작하여 PDF 용지를 꽉 채우도록 그림
+      // 4-5. pdf 생성 및 저장
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidthMm, pdfHeightMm);
-
-      // 10. PDF 파일 저장 (이름 변경)
       pdf.save("GiftTrip-초안.pdf");
 
     } catch (e) {
@@ -232,9 +220,9 @@ export default function GiftTripPages07() {
       setError("PDF 생성에 실패했습니다. 다시 시도해주세요.");
     } finally {
       setIsDownloading(false);
+      document.body.classList.remove("pdf-capturing");
     }
   };
-  // ---------------------------------
 
   // --- 5. 최종 컴포넌트 JSX 반환 ---
   return (
@@ -252,6 +240,16 @@ export default function GiftTripPages07() {
         <div className="Page07_Hype">{hypeText}</div>
 
         {renderContent()}
+
+        <div className="Page07_ChecklistPrintSection">
+          <h2 className="Page07_Title" style={{marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px'}}>
+            여행 준비물 체크리스트
+          </h2>
+
+          <div className="ModalContent" style={{ border: 'none', boxShadow: 'none', position: 'static', transform: 'none', padding: '0 10px' }}>
+            <ChecklistContent countryCode={countryCode} />
+          </div>
+        </div>
 
 
         <div className="Page07_Actions">
