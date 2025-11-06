@@ -21,13 +21,13 @@ const sessionData = {
         tags: ["미식", "도시", "야경"]
     },
     categoryProgress: {
-        "숙박": false,
+        "도시": false,
         "액티비티": false,
         "음식": false,
         "인기스팟": false,
     },
     preferenceAnswers: {
-        "숙박": [],
+        "도시": [],
         "액티비티": [],
         "음식": [],
         "인기스팟": [],
@@ -41,8 +41,8 @@ const initializeData = () => {
     sessionData.countryCode = "JP";
     sessionData.questionAnswers = [];
     sessionData.request = "";
-    sessionData.preferenceAnswers = { "숙박": [], "액티비티": [], "음식": [], "인기스팟": [] };
-    sessionData.categoryProgress = { "숙박": false, "액티비티": false, "음식": false, "인기스팟": false };
+    sessionData.preferenceAnswers = { "도시": [], "액티비티": [], "음식": [], "인기스팟": [] };
+    sessionData.categoryProgress = { "도시": false, "액티비티": false, "음식": false, "인기스팟": false };
     sessionData.finalSelections = [];
     sessionData.checklistContent = [];
 };
@@ -113,7 +113,7 @@ function getAdditionalRequest() {
 
 // 전역 카테고리 목록
 const categories = [
-  { key: "Stay", name: "숙박" },
+  { key: "Stay", name: "도시" },
   { key: "Activity", name: "액티비티" },
   { key: "Food", name: "음식" },
   { key: "Spots", name: "인기스팟" },
@@ -137,7 +137,7 @@ function addPage5Verdict({ countryCode, categoryKey, imageUrl, verdict }) {
     id,
     verdict,                // 'like' | 'dislike'
     country: countryCode || "JP",
-    type: typeName,         // "숙박" 등
+    type: typeName,         // "도시" 등
     imageUrl,
     ts: Date.now(),
   });
@@ -161,7 +161,7 @@ function getPage6Selections({ countryCode, categoryKey, sort = "popular" }) {
   // 프론트에서 쓰기 좋게 맵핑
   return arr.map(x => ({
     id: x.id,
-    type: x.type,          // "숙박" 등
+    type: x.type,          // "도시" 등
     country: x.country,    // "JP"
     imageUrl: x.imageUrl,
     // name/description은 프론트에서 파일명으로 렌더링하므로 생략 가능
@@ -193,5 +193,4 @@ module.exports = {
     addPage5Verdict,
     getPage6Selections,
     clearPage5Selections,
-
 };
