@@ -5,6 +5,7 @@ CSS/ChecklistModal.jsx
 
 
 호찬 수정 사항:  
-JSX/00page, 05page  
-CSS/00page  
-JS/GiftTripPages05.cjs, ReviewEngine.cjs
+JSX/02 ~ 07page  
+CSS/04page  
+JS/GiftTripPages06.cjs, Manager  
+<h1>특이사항)</h1> "숙박" -> "도시" 전부 변경하였음
