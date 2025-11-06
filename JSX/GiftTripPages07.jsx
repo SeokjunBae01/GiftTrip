@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import "../CSS/GiftTripPages07.css";
 import "../CSS/common.css";
 
@@ -8,11 +8,26 @@ import html2canvas from "html2canvas";
 
 import ChecklistModal, { ChecklistContent } from "./ChecklistModal.jsx";
 import "../CSS/ChecklistModal.css";
-// ---------------------------------
+
+function parseTitleAndDesc(url) {
+  try {
+    const decoded = decodeURIComponent(url || "");
+    const base = (decoded.split("/").pop() || "").split("?")[0];
+    const noExt = base.replace(/\.[^/.]+$/, "");
+    const parts = noExt.split("-");
+    if (parts.length === 1) return { title: parts[0].trim(), desc: "" };
+    const title = parts[0].trim();
+    const desc = parts.slice(1).join("-").trim();
+    return { title, desc };
+  } catch {
+    return { title: "", desc: "" };
+  }
+}
 
 export default function GiftTripPages07() {
   const location = useLocation();
-  const { selectedItemIds, countryCode } = location.state || {};
+  const { selectedItemIds, selectedCode } = location.state || {};
+
   const [groupedItems, setGroupedItems] = useState({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState("");
@@ -24,15 +39,14 @@ export default function GiftTripPages07() {
   const hypeText =
     "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
 
-  // --- 1. 데이터 Fetching 및 처리 ---
   useEffect(() => {
     if (!selectedItemIds || selectedItemIds.length === 0) {
       setError("선택된 항목이 없습니다. 이전 페이지로 돌아가 다시 선택해주세요.");
       setIsLoading(false);
       return;
     }
-    if (!countryCode) {
-      setError("국가 코드가 누락되었습니다. 이전 페이지부터 다시 시도해주세요.");
+    if (!selectedCode) {
+      setError("국가 코드(SelectedCode)가 누락되었습니다. 이전 페이지부터 다시 시도해주세요.");
       setIsLoading(false);
       return;
     }
@@ -44,52 +58,28 @@ export default function GiftTripPages07() {
 
         const res = await fetch("http://localhost:3000/api/page7/details", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ ids: selectedItemIds }),
         });
-
-        if (!res.ok) {
-          throw new Error(`서버 응답 실패: ${res.status}`);
-        }
+        if (!res.ok) throw new Error(`서버 응답 실패: ${res.status}`);
 
         const data = await res.json();
         if (!data.success || !Array.isArray(data.items)) {
           throw new Error("데이터 형식이 올바르지 않습니다.");
         }
 
-        //******************************************
-        // id에서 받아온 데이터들 카테고리별로 소팅
-        const items = data.items;
-
-        const grouped = items.reduce((acc, item) => {
+        const grouped = data.items.reduce((acc, item) => {
           const category = item.type || "기타";
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(item);
+          (acc[category] ||= []).push(item);
           return acc;
         }, {});
-        //*****************************************
 
+        const categoryOrder = ["도시", "액티비티", "음식", "인기 스팟", "기타"];
+        const ordered = {};
+        categoryOrder.forEach((c) => { if (grouped[c]) ordered[c] = grouped[c]; });
 
-        //*****************************************
-        // 카테고리 순서 정리
-        const categoryOrder = ["숙박", "액티비티", "음식", "인기 스팟", "기타"];
-        const orderedGroupedItems = {};
-
-        categoryOrder.forEach(category => {
-          if (grouped[category]) {
-            orderedGroupedItems[category] = grouped[category];
-          }
-        });
-
-        setGroupedItems(orderedGroupedItems);
-        //*****************************************
-
+        setGroupedItems(ordered);
         setCountryName(data.countryName || "");
-
       } catch (e) {
         console.error("[Page07] fetchDetails error:", e);
         setError("선택한 항목의 세부 정보를 불러오는 데 실패했습니다.");
@@ -99,122 +89,89 @@ export default function GiftTripPages07() {
     };
 
     fetchDetails();
-  }, [selectedItemIds, countryCode]);
-
-  // --- 2. 조건부 UI 렌더링 함수 ---
+  }, [selectedItemIds, selectedCode]);
 
   const renderContent = () => {
-    if (isLoading) {
-      return <p>최종 초안을 생성 중입니다...</p>;
-    }
-
-    if (error) {
-      return <p style={{ color: "tomato" }}>{error}</p>;
-    }
-
-    if (Object.keys(groupedItems).length === 0) {
-      return <p>표시할 항목이 없습니다.</p>;
-    }
+    if (isLoading) return <p>최종 초안을 생성 중입니다...</p>;
+    if (error) return <p style={{ color: "tomato" }}>{error}</p>;
+    if (Object.keys(groupedItems).length === 0) return <p>표시할 항목이 없습니다.</p>;
 
     return Object.entries(groupedItems).map(([category, items]) => (
       <section className="Page07_Section" key={category}>
         <h3 className="Page07_SectionTitle">{category}</h3>
         <div className="Page07_CardsGrid">
-          {items.map((item) => (
-            <div className="Page07_Card" key={item.id}>
-              <img
-                className="Page07_CardImage"
-                src={item.imageUrl || "https://via.placeholder.com/480x320?text=No+Image"}
-                alt={item.name}
-                onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/480x320?text=No+Image"; }}
-              />
-              <div className="Page07_CardContent">
-                <div className="Page07_CardHeader">
-                  <h4 className="Page07_CardTitle">{item.name}</h4>
-                  <a
-                    className="Page07_Link"
-                    href={getDynamicLink(item)}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    상세보기
-                  </a>
+          {items.map((item) => {
+            const isCity = item.type === "도시";
+            const { title: splitTitle, desc: splitDesc } = isCity ? parseTitleAndDesc(item.imageUrl) : { title: "", desc: "" };
+            const finalTitle = isCity ? (splitTitle || item.name) : item.name;
+            const finalDesc  = isCity ? splitDesc : item.description;
+
+            return (
+              <div className="Page07_Card" key={item.id}>
+                <img
+                  className="Page07_CardImage"
+                  src={item.imageUrl || "https://via.placeholder.com/480x320?text=No+Image"}
+                  alt={finalTitle}
+                  onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/480x320?text=No+Image"; }}
+                />
+                <div className="Page07_CardContent">
+                  <div className="Page07_CardHeader">
+                    <h4 className="Page07_CardTitle">{finalTitle}</h4>
+                    <a
+                      className="Page07_Link"
+                      href={getDynamicLink(item, finalTitle)}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      상세보기
+                    </a>
+                  </div>
+                  {finalDesc && <p className="Page07_CardDescription">{finalDesc}</p>}
                 </div>
-                <p className="Page07_CardDescription">{item.description}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     ));
   };
 
-// --- 3. 동적 링크 생성 함수 ---
-  const getDynamicLink = (item) => {
-    // 3-1. 기본 검색 URL
+  const getDynamicLink = (item, titleForSearch) => {
     const baseUrlGoogle = "https://www.google.com/search?q=";
     const baseUrlYouTube = "https://www.youtube.com/results?search_query=";
+    const searchTerm = encodeURIComponent(`${countryName || ""} ${titleForSearch || item.name}`.trim());
 
-    // 3-2. 검색어 생성
-    const searchTerm = encodeURIComponent(`${countryName || ""} ${item.name} `.trim());
-
-    // 3-3. 카테고리(item.type)에 따라 다른 URL 반환
     switch (item.type) {
-      case "숙박":
+      case "도시":
       case "액티비티":
         return `${baseUrlYouTube}${searchTerm}`;
-
       case "음식":
       case "인기 스팟":
         return `${baseUrlGoogle}${searchTerm}`;
-
       default:
-        // 백엔드가 제공한 'item.link'가 유효하다면 그것을 우선 사용
-        if (item.link && item.link !== "#") {
-          return item.link;
-        }
-        // 그 외에는 기본값으로 구글 검색
+        if (item.link && item.link !== "#") return item.link;
         return `${baseUrlGoogle}${searchTerm}`;
     }
   };
-  
-// --- 4. PDF 다운로드 핸들러 ---
+
   const handlePdfDownload = async () => {
-    // 4-1. PDF로 만들 DOM 요소 가져오기
     const element = mainContentRef.current;
     if (!element) return;
 
     setIsDownloading(true);
     document.body.classList.add("pdf-capturing");
-
     try {
-      // 4-2. html2canvas로 DOM을 캔버스(이미지)로 변환
-      const canvas = await html2canvas(element, { 
-        useCORS: true,
-        scale: 2
-      }); 
-
-      // 4-3. 캔버스에서 이미지 데이터(Data URL) 추출 (jspdf 사용가능하도록)
+      const canvas = await html2canvas(element, { useCORS: true, scale: 2 });
       const imgData = canvas.toDataURL("image/png");
       const imgWidthPx = canvas.width;
       const imgHeightPx = canvas.height;
-      // (임시 jsPDF 객체를 만들어 A4 너비 값을 mm 단위로 가져옴)
       const pdfWidthMm = new jsPDF().internal.pageSize.getWidth();
       const ratio = imgHeightPx / imgWidthPx;
       const pdfHeightMm = pdfWidthMm * ratio;
 
-      // 4-4. jsPDF 객체 생성 시, format에 [너비, 높이]를 배열로 전달하여
-      //      "세로로 긴" 커스텀 용지 크기를 지정
-      const pdf = new jsPDF({
-        orientation: "p", // "p" (portrait, 세로)
-        unit: "mm",       // 단위: 밀리미터
-        format: [pdfWidthMm, pdfHeightMm] // [너비, 높이]
-      });
-      
-      // 4-5. pdf 생성 및 저장
+      const pdf = new jsPDF({ orientation: "p", unit: "mm", format: [pdfWidthMm, pdfHeightMm] });
       pdf.addImage(imgData, "PNG", 0, 0, pdfWidthMm, pdfHeightMm);
       pdf.save("GiftTrip-초안.pdf");
-
     } catch (e) {
       console.error("PDF 생성 중 오류 발생:", e);
       setError("PDF 생성에 실패했습니다. 다시 시도해주세요.");
@@ -224,16 +181,13 @@ export default function GiftTripPages07() {
     }
   };
 
-  // --- 5. 최종 컴포넌트 JSX 반환 ---
   return (
     <div className="CommonPage">
-      {/* 5-1. 공통 헤더 */}
       <header className="CommonHeader">
         <h1 className="CommonLogo CommonLogo_Left">Gift Trip</h1>
         <button className="CommonLoginBtn" type="button">로그인</button>
       </header>
 
-      {/* 5-2. 메인 컨텐츠 */}
       <main className="Page07_Main" ref={mainContentRef}>
         <h2 className="Page07_Title">최종 초안</h2>
         <h3 className="Page07_Subtitle">AI가 생각한 당신의 여행</h3>
@@ -242,21 +196,18 @@ export default function GiftTripPages07() {
         {renderContent()}
 
         <div className="Page07_ChecklistPrintSection">
-          <h2 className="Page07_Title" style={{marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px'}}>
+          <h2 className="Page07_Title" style={{ marginTop: '40px', borderTop: '1px solid #eee', paddingTop: '20px' }}>
             여행 준비물 체크리스트
           </h2>
 
           <div className="ModalContent" style={{ border: 'none', boxShadow: 'none', position: 'static', transform: 'none', padding: '0 10px' }}>
-            <ChecklistContent countryCode={countryCode} />
+            <ChecklistContent countryCode={selectedCode} />
           </div>
         </div>
 
-
         <div className="Page07_Actions">
-          
-          {/* 공유하기 버튼 */}
-          <button 
-            className="Page07_Btn primary" 
+          <button
+            className="Page07_Btn primary"
             type="button"
             onClick={handlePdfDownload}
             disabled={isDownloading}
@@ -264,7 +215,6 @@ export default function GiftTripPages07() {
             {isDownloading ? "PDF 생성 중..." : "공유하기 (PDF)"}
           </button>
 
-          {/* 체크리스트 버튼 */}
           <button
             className="Page07_Btn secondary"
             type="button"
@@ -272,14 +222,13 @@ export default function GiftTripPages07() {
           >
             체크리스트 확인
           </button>
-
         </div>
       </main>
-      {/* 모달 컴포넌트 렌더링 */}
+
       <ChecklistModal
         show={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        countryCode={countryCode}
+        countryCode={selectedCode}
       />
     </div>
   );
