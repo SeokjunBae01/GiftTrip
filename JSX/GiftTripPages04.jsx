@@ -9,26 +9,31 @@ export default function GiftTripPages04() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Page00에서 전달받은 코드 우선
+  // Page00 또는 이전 페이지에서 전달받은 코드 우선
   const codeFromState = location.state?.selectedCode;
 
   // Context: { loading, countryCode, categories: [{key,name}] }
   const { loading, countryCode, categories } = useAppData();
 
   const [thumbnails, setThumbnails] = useState({}); // { [key]: url|null }
-  const [completed, setCompleted] = useState([]);   // ["숙박","액티비티","음식","인기스팟"]
+  const [completed, setCompleted] = useState([]);   // ["도시","액티비티","음식","인기스팟"]
+
+  // ✅ 최상위에서만 훅 호출: 유효 국가코드
+  const effectiveCode = useMemo(
+    () => codeFromState || countryCode,
+    [codeFromState, countryCode]
+  );
 
   // 완료 상태 로드
-  const loadCompleted = () => {
-    try {
-      const stored = JSON.parse(localStorage.getItem("completedCategories")) || [];
-      setCompleted(Array.isArray(stored) ? stored : []);
-    } catch {
-      setCompleted([]);
-    }
-  };
-
   useEffect(() => {
+    const loadCompleted = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("completedCategories")) || [];
+        setCompleted(Array.isArray(stored) ? stored : []);
+      } catch {
+        setCompleted([]);
+      }
+    };
     loadCompleted();
     const onFocus = () => loadCompleted();
     window.addEventListener("focus", onFocus);
@@ -37,7 +42,6 @@ export default function GiftTripPages04() {
 
   // 썸네일 로딩
   useEffect(() => {
-    const effectiveCode = codeFromState || countryCode;
     if (loading) return;
     if (!effectiveCode || categories.length === 0) return;
 
@@ -59,7 +63,7 @@ export default function GiftTripPages04() {
     };
 
     fetchThumbnails();
-  }, [loading, countryCode, categories, codeFromState]);
+  }, [loading, categories, effectiveCode]); // ✅ 의존성에 effectiveCode만 사용
 
   // 전부 완료?
   const allDone = useMemo(() => {
@@ -68,13 +72,19 @@ export default function GiftTripPages04() {
     return categories.every(({ name }) => done.has(name));
   }, [categories, completed]);
 
+  // 카테고리 시작 버튼
   const handleStart = (name, index) => {
-    // page5에서 완료 처리 후 localStorage에 이름(name) 추가하도록 구성
-    navigate("/page5", { state: { categoryIndex: index, categoryName: name } });
+    navigate("/page5", {
+      state: {
+        categoryIndex: index,
+        categoryName: name,
+        selectedCode: effectiveCode, // ✅ 최신 코드 함께 전달
+      },
+    });
   };
 
   const handleNext = () => {
-    navigate("/page6", { state: { from: "page4" } });
+    navigate("/page6", { state: { from: "page4", selectedCode: effectiveCode } }); // 선택사항: 코드 유지
   };
 
   // ✅ 완료 상태 초기화(디버깅용)
@@ -151,14 +161,13 @@ export default function GiftTripPages04() {
             완료 상태 초기화
           </button>
 
-          {/* 좋아요 초기화도 필요하면 아래 주석 해제 */}
-          {<button
+          <button
             className="CommonFrame"
             onClick={handleResetLikes}
             style={{ padding: "10px 16px", background: "#ffefef" }}
           >
             좋아요 초기화
-          </button>}
+          </button>
         </div>
       </main>
 
