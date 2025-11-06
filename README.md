@@ -1,5 +1,5 @@
 # GiftTrip
-동윤 수정 사항:  
+동윤 수정 사항: 상세보기 구현, pdf 체크리스트 추가
 JSX/ChecklistData.jsx, ChecklistModal.jsx, 06page, 07page  
 CSS/ChecklistModal.jsx
 
