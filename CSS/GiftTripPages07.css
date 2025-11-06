@@ -139,3 +139,18 @@
 .Page07_Btn.secondary:hover {
   filter: brightness(0.98);
 }
+
+/* --- PDF 캡처용 스타일 --- */
+
+.Page07_ChecklistPrintSection {
+  display: none;
+}
+
+.pdf-capturing .Page07_ChecklistPrintSection {
+  display: block;
+  background-color: #ffffff; 
+}
+
+.pdf-capturing .Page07_Actions {
+  display: none;
+}
