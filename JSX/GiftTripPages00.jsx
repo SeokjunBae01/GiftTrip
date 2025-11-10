@@ -82,10 +82,10 @@ export default function GiftTripPages00() {
   const isButtonEnabled = !isLoading && (isValidDestination || destination.trim() === '');
 
   const handleButtonClick = async () => {
-    if (isLoading || !isButtonEnabled) return;
+    if (isLoading || !isButtonEnabled) return;  
 
     const countryName = destination.trim();
-    const countryCode = selectedCountryCode;
+    const countryCode = selectedCountryCode;  
 
     if (isValidDestination) {
       setIsLoading(true);
@@ -96,8 +96,13 @@ export default function GiftTripPages00() {
           body: JSON.stringify({ countryName, countryCode }),
         });
         if (!response.ok) throw new Error('데이터 저장 실패');
-        const data = await response.json();
-        navigate(data.next, { state: { selectedCode: countryCode } });
+        const data = await response.json(); 
+
+        // ✅ 5→4 복귀 플래그 제거 (0→4 진입 시 초기화가 스킵되지 않도록)
+        sessionStorage.removeItem("gt.fromPage5");  
+
+        // ✅ Page04에서 'page0에서 왔다'로 인식 → 강제 초기화 트리거
+        navigate(data.next, { state: { from: "page0", selectedCode: countryCode } });
       } catch (err) {
         console.error('여행지 데이터 저장 중 오류:', err);
       } finally {

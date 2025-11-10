@@ -40,6 +40,53 @@ export default function GiftTripPages04() {
     return () => window.removeEventListener("focus", onFocus);
   }, [location.key]);
 
+  // ✅ Page04: 진입 시 자동 초기화 (0→4, 3→4는 초기화 / 5→4, reload는 스킵)
+  useEffect(() => {
+    const nav = performance.getEntriesByType?.("navigation")?.[0];
+    const isReload = nav && nav.type === "reload";
+    if (isReload) return; // 새로고침은 유지
+
+    const fromState = location.state?.from;
+    const fromPage5Flag = sessionStorage.getItem("gt.fromPage5") === "1";
+
+    // 1) page0/page3에서 왔으면 항상 초기화 (플래그 잔여 무시)
+    if (fromState === "page0" || fromState === "page3") {
+      sessionStorage.removeItem("gt.fromPage5");
+      (async () => {
+        try {
+          localStorage.removeItem("completedCategories");
+          setCompleted([]);
+          const res = await fetch("http://localhost:3000/api/page5/likes/reset", { method: "POST" });
+          await res.json().catch(() => ({}));
+        } catch (e) {
+          console.warn("[Page04] 강제 초기화 오류(무시 가능)", e);
+        }
+      })();
+      return;
+    }
+
+    // 2) 5→4 복귀면 초기화 스킵
+    if (fromState === "page5" || fromPage5Flag) {
+      sessionStorage.removeItem("gt.fromPage5"); // 일회성 플래그 정리
+      return;
+    }
+
+    // 3) 그 외 진입(예: 직접 이동 등)에는 기본 초기화
+    (async () => {
+      try {
+        localStorage.removeItem("completedCategories");
+        setCompleted([]);
+        const res = await fetch("http://localhost:3000/api/page5/likes/reset", { method: "POST" });
+        await res.json().catch(() => ({}));
+      } catch (e) {
+        console.warn("[Page04] 초기화 중 오류(무시 가능)", e);
+      } finally {
+        // 혹시 남아있을 수 있는 플래그 정리
+        sessionStorage.removeItem("gt.fromPage5");
+      }
+    })();
+  }, [location.key, location.state?.from]);
+
   // 썸네일 로딩
   useEffect(() => {
     if (loading) return;
@@ -63,7 +110,7 @@ export default function GiftTripPages04() {
     };
 
     fetchThumbnails();
-  }, [loading, categories, effectiveCode]); // ✅ 의존성에 effectiveCode만 사용
+  }, [loading, categories, effectiveCode]);
 
   // 전부 완료?
   const allDone = useMemo(() => {
@@ -84,28 +131,7 @@ export default function GiftTripPages04() {
   };
 
   const handleNext = () => {
-    navigate("/page6", { state: { from: "page4", selectedCode: effectiveCode } }); // 선택사항: 코드 유지
-  };
-
-  // ✅ 완료 상태 초기화(디버깅용)
-  const handleResetCompleted = () => {
-    localStorage.removeItem("completedCategories");
-    setCompleted([]);
-    alert("완료 상태가 초기화되었습니다.");
-  };
-
-  // 좋아요 초기화
-  const handleResetLikes = async () => {
-    if (!window.confirm("좋아요 데이터도 모두 초기화할까요?")) return;
-    try {
-      const res = await fetch("http://localhost:3000/api/page5/likes/reset", { method: "POST" });
-      const data = await res.json();
-      if (data.success) alert("좋아요 데이터가 초기화되었습니다!");
-      else alert("초기화 실패");
-    } catch (err) {
-      console.error(err);
-      alert("서버 오류로 초기화 실패");
-    }
+    navigate("/page6", { state: { from: "page4", selectedCode: effectiveCode } });
   };
 
   return (
@@ -150,25 +176,6 @@ export default function GiftTripPages04() {
             );
           })
         )}
-
-        {/* 🔧 디버깅 툴바: 완료 상태 초기화 버튼 */}
-        <div style={{ marginTop: 24, display: "flex", gap: 12, justifyContent: "center" }}>
-          <button
-            className="CommonFrame"
-            onClick={handleResetCompleted}
-            style={{ padding: "10px 16px" }}
-          >
-            완료 상태 초기화
-          </button>
-
-          <button
-            className="CommonFrame"
-            onClick={handleResetLikes}
-            style={{ padding: "10px 16px", background: "#ffefef" }}
-          >
-            좋아요 초기화
-          </button>
-        </div>
       </main>
 
       {/* ✅ 전부 완료 시 바텀 CTA */}

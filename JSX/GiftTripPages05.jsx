@@ -38,6 +38,39 @@ export default function GiftTripPages05() {
   const [badReviews, setBadReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(false);
 
+  /* --------------------- 🔒 프론트 리뷰 캐시 --------------------- */
+  const REV_CACHE_KEY = "gt.reviewCache.v1";
+  const REV_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30일 (필요 없으면 0)
+
+  const stripQuery = (url = "") => {
+    try { return url.split("?")[0]; } catch { return url || ""; }
+  };
+  const cacheKeyOf = (code, cat, url) =>
+    `${code || ""}|${cat || ""}|${stripQuery(url || "")}`;
+
+  const readReviewCache = () => {
+    try { return JSON.parse(localStorage.getItem(REV_CACHE_KEY)) || {}; }
+    catch { return {}; }
+  };
+  const writeReviewCache = (obj) => {
+    try { localStorage.setItem(REV_CACHE_KEY, JSON.stringify(obj)); } catch {}
+  };
+  const getCachedReview = (code, cat, url) => {
+    const map = readReviewCache();
+    const key = cacheKeyOf(code, cat, url);
+    const v = map[key];
+    if (!v) return null;
+    if (REV_TTL_MS > 0 && Date.now() - (v.ts || 0) > REV_TTL_MS) return null; // 만료
+    return v;
+  };
+  const setCachedReview = (code, cat, url, payload) => {
+    const map = readReviewCache();
+    const key = cacheKeyOf(code, cat, url);
+    map[key] = { ...payload, ts: Date.now() };
+    writeReviewCache(map);
+  };
+  /* ------------------------------------------------------------ */
+
   // 필수 파라미터 없으면 되돌리기
   useEffect(() => {
     if (!loading && !categoryName) navigate("/page4");
@@ -92,7 +125,7 @@ export default function GiftTripPages05() {
       return;
     }
     const url = pictures[currentIndex];
-    if (!url) return; 
+    if (!url) return;
 
     try {
       const decoded = decodeURIComponent(url);
@@ -100,7 +133,7 @@ export default function GiftTripPages05() {
       const noExt = base.replace(/\.[^/.]+$/, ""); // 확장자 제거
       const [rawTitle, ...rest] = noExt.split("-");
       const title = (rawTitle || "").trim();
-      const desc = (rest.join("-") || "").trim(); // '-'가 여러개여도 뒤쪽 전부 설명으로  
+      const desc = (rest.join("-") || "").trim(); // '-'가 여러개여도 뒤쪽 전부 설명으로
 
       setImageTitle(title);   // ✅ 제목만 노출
       setImageDesc(desc);     // (지금은 미노출)
@@ -108,12 +141,9 @@ export default function GiftTripPages05() {
       setImageTitle("");
       setImageDesc("");
     }
-  }, [pictures, currentIndex]); 
+  }, [pictures, currentIndex]);
 
-  // ⬇️ 렌더링: 오버레이에는 제목만
-  {imageTitle && <div className="Page05_ImageTitle">{imageTitle}</div>}
-
-  // 현재 이미지가 바뀔 때 리뷰 조회
+  // 현재 이미지가 바뀔 때 리뷰 조회 (⚡ 캐시 선조회)
   useEffect(() => {
     if (!pictures.length) {
       setGoodReviews([]);
@@ -128,6 +158,19 @@ export default function GiftTripPages05() {
     (async () => {
       try {
         setReviewLoading(true);
+
+        // ① 프론트 캐시 HIT이면 즉시 사용하고 서버 호출 스킵
+        const cached = getCachedReview(effectiveCode, apiCategoryKey, img);
+        if (cached) {
+          setGoodReviews(cached.positives || []);
+          setBadReviews(cached.negatives || []);
+          // 서버 포맷의 title이 있으면 오버레이도 동기화
+          if (cached.title) setImageTitle((t) => cached.title || t);
+          setReviewLoading(false);
+          return;
+        }
+
+        // ② 캐시 MISS → 서버 호출
         const res = await fetch("http://localhost:3000/api/page5/reviews", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -141,8 +184,16 @@ export default function GiftTripPages05() {
         if (!res.ok) throw new Error(`리뷰 API 실패: ${res.status}`);
         const data = await res.json(); // { success, title, positives, negatives, ... }
         if (!data.success) throw new Error("리뷰 조회 실패");
+
         setGoodReviews(data.positives || []);
         setBadReviews(data.negatives || []);
+
+        // ③ 성공 시 프론트 캐시에 저장
+        setCachedReview(effectiveCode, apiCategoryKey, img, {
+          title: data.title,
+          positives: data.positives,
+          negatives: data.negatives,
+        });
       } catch (e) {
         if (e.name !== "AbortError") {
           console.error("[Page05] 리뷰 불러오기 실패:", e);
@@ -155,7 +206,7 @@ export default function GiftTripPages05() {
     })();
 
     return () => ctrl.abort();
-  }, [pictures, currentIndex, effectiveCode, apiCategoryKey]); // ✅ 의존성 교체
+  }, [pictures, currentIndex, effectiveCode, apiCategoryKey]);
 
   // 완료 상태 저장
   const markCompleted = () => {
@@ -164,14 +215,20 @@ export default function GiftTripPages05() {
     localStorage.setItem("completedCategories", JSON.stringify(next));
   };
 
-  // 진행 공통
+  // ✅ 진행 공통
   const advance = () => {
     if (currentIndex < pictures.length - 1) {
       setCurrentIndex((prev) => prev + 1);
     } else {
+      // ✅ 카테고리 완료 저장
       markCompleted();
+
+      // ✅ 5→4 복귀 플래그 설정 (초기화 방지용)
+      sessionStorage.setItem("gt.fromPage5", "1");
+
+      // ✅ Page04로 이동 (state에 from도 함께 전달)
       navigate("/page4", {
-        state: { selectedCode: effectiveCode },   // ✅ 꼭 싣기
+        state: { from: "page5", selectedCode: effectiveCode },
       });
     }
   };

@@ -112,8 +112,12 @@ const [hypeText, setHypeText] = useState("AI가 여행 초안을 요약 중입�
             const isCity = item.type === "도시";
             const { title: splitTitle, desc: splitDesc } = isCity ? parseTitleAndDesc(item.imageUrl) : { title: "", desc: "" };
             const finalTitle = isCity ? (splitTitle || item.name) : item.name;
-            const finalDesc  = isCity ? splitDesc : item.description;
-
+            // JP / Activity 같은 주소형 문자열이면 표시하지 않기
+            const rawDesc = isCity ? splitDesc : item.description;
+            const isAddressLike =
+              typeof rawDesc === "string" &&
+              /^\s*[A-Z]{2}\s*\/\s*(Stay|Activity|Food|Spots)\s*$/i.test(rawDesc);
+            const finalDesc = isAddressLike ? "" : rawDesc;
             return (
               <div className="Page07_Card" key={item.id}>
                 <img
