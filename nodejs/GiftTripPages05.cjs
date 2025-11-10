@@ -14,6 +14,9 @@ const {
   cacheStats,
 } = require("./ReviewEngine.cjs");
 
+// ✅ 모든 카테고리를 소문자 기준으로 통일
+const ALLOWED_LOWER = new Set(["stay", "activity", "food", "spots"]);
+
 /* ===================== 좋아요 / 싫어요 / 리셋 ===================== */
 
 router.post("/page5/like", (req, res) => {
@@ -22,12 +25,14 @@ router.post("/page5/like", (req, res) => {
     if (!categoryKey || !imageUrl) {
       return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
     }
-    categoryKey = normalizeCategoryKey(categoryKey);
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (!allowed.has(categoryKey)) {
+
+    // ⬇ 소문자 정규화
+    categoryKey = (normalizeCategoryKey(categoryKey) || "").toLowerCase();
+    if (!ALLOWED_LOWER.has(categoryKey)) {
       return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
     }
 
+    // ⬇ 저장도 소문자 키로
     const id = addLike({ countryCode, categoryKey, imageUrl });
     if (!id) return res.status(500).json({ success: false, error: "저장 실패" });
     return res.json({ success: true, id });
@@ -43,9 +48,10 @@ router.post("/page5/dislike", (req, res) => {
     if (!categoryKey || !imageUrl) {
       return res.status(400).json({ success: false, error: "categoryKey, imageUrl는 필수입니다." });
     }
-    categoryKey = normalizeCategoryKey(categoryKey);
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (!allowed.has(categoryKey)) {
+
+    // ⬇ 소문자 정규화
+    categoryKey = (normalizeCategoryKey(categoryKey) || "").toLowerCase();
+    if (!ALLOWED_LOWER.has(categoryKey)) {
       return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
     }
 
@@ -72,10 +78,11 @@ router.post("/page5/likes/reset", (req, res) => {
 router.post("/page5/reviews", async (req, res) => {
   try {
     const { imageUrl, countryCode } = req.body || {};
-    let { categoryKey } = req.body || {};
+    let   { categoryKey } = req.body || {};
     const hasUrl = !!imageUrl;
 
-    categoryKey = normalizeCategoryKey(categoryKey);
+    // ⬇ 소문자 정규화
+    categoryKey = (normalizeCategoryKey(categoryKey) || "").toLowerCase();
     const raw   = extractTitleFromUrl(imageUrl || "");
     const title = normalizeTitle(raw);
 
@@ -84,22 +91,20 @@ router.post("/page5/reviews", async (req, res) => {
     if (!imageUrl) {
       return res.status(400).json({ success: false, error: "imageUrl는 필수입니다." });
     }
-
-    const allowed = new Set(["Stay", "Activity", "Food", "Spots"]);
-    if (categoryKey && !allowed.has(categoryKey)) {
+    if (categoryKey && !ALLOWED_LOWER.has(categoryKey)) {
       return res.status(400).json({ success: false, error: `허용되지 않은 categoryKey 입니다. (${categoryKey})` });
     }
 
-    // 🔥 캐시된 GPT 결과 사용 (미스 시 GPT 호출 후 저장)
+    // 🔥 캐시 사용 (미스 시 생성)
     const result = await getReviewsGPTCached({
       title,
       imageUrl,
       countryCode,
-      categoryKey,
+      categoryKey, // 'activity' 등 소문자
     });
 
     // 2문장 보장
-    const to2 = (arr, fb) => (Array.isArray(arr) && arr.length === 2 ? arr : fb);
+    const to2  = (arr, fb) => (Array.isArray(arr) && arr.length === 2 ? arr : fb);
     const safe = fallbackReviews(result.title);
 
     const out = {
@@ -124,9 +129,8 @@ router.post("/page5/reviews", async (req, res) => {
   }
 });
 
-/* ===================== 캐시 관리 유틸(선택) ===================== */
+/* ===================== 캐시 관리 유틸 ===================== */
 
-// 캐시 비우기
 router.post("/page5/reviews/cache/clear", async (req, res) => {
   try {
     const result = await clearReviewCache();
@@ -137,7 +141,6 @@ router.post("/page5/reviews/cache/clear", async (req, res) => {
   }
 });
 
-// 캐시 상태 확인
 router.get("/page5/reviews/cache/stats", async (req, res) => {
   try {
     const s = await cacheStats();
