@@ -36,8 +36,7 @@ export default function GiftTripPages07() {
   const [countryName, setCountryName] = useState("");
   const mainContentRef = useRef(null);
 
-  const hypeText =
-    "당신의 여행은 야경과 미식을 즐기는 리듬으로 흘러가요. 도보와 대중교통으로 가볍고 자유롭게 도시를 탐험하게 될 거예요!";
+const [hypeText, setHypeText] = useState("AI가 여행 초안을 요약 중입니다...");
 
   useEffect(() => {
     if (!selectedItemIds || selectedItemIds.length === 0) {
@@ -55,6 +54,7 @@ export default function GiftTripPages07() {
       try {
         setIsLoading(true);
         setError("");
+        setHypeText("AI가 여행 초안을 요약 중입니다...");
 
         const res = await fetch("http://localhost:3000/api/page7/details", {
           method: "POST",
@@ -80,6 +80,14 @@ export default function GiftTripPages07() {
 
         setGroupedItems(ordered);
         setCountryName(data.countryName || "");
+
+        // ✅ [신규] API 응답에서 hypeText를 받아 state에 저장합니다.
+        if (data.hypeText) {
+          setHypeText(data.hypeText);
+        } else {
+          // 혹시 모르니 폴백 문구 설정
+          setHypeText("당신만의 멋진 여행 계획이 완성되었습니다!");
+        }
       } catch (e) {
         console.error("[Page07] fetchDetails error:", e);
         setError("선택한 항목의 세부 정보를 불러오는 데 실패했습니다.");
