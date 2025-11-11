@@ -7,8 +7,8 @@
 /* 라운드 카드(wrapper) - 크기 증가 */
 .Page05_ImageCard {
   position: relative;
-  width: 800px;
-  height: 450px;
+  width: 50vw;
+  height: 50vh;
   border-radius: 18px;
   overflow: hidden;
   background: #fff;
@@ -67,7 +67,6 @@
   flex-direction: column; /* 세로 정렬 */
   gap: 32px;
   align-items: center; /* 가운데 정렬 */
-  margin-top: 60px;
   justify-content: center;
   padding-bottom: 120px;
 }
@@ -174,4 +173,3 @@
   border-radius:10px;
   background: rgba(0,0,0,.35);
 }
-
