@@ -11,9 +11,9 @@ export default function GiftTripPages02() {
   // 백엔드 API 기본 URL 설정
   const API_BASE_URL = 'http://localhost:3000/api/page2';
   const examples = [
-    "예: 도쿄 제외, 아시아 내에서만",
-    "예: 동유럽 위주, 야경이 멋진 도시",
-    "예: 걷기 좋은 곳, 대중교통 편리한 도시",
+    "예: 일본을 제외해주세요, 아시아 국가만 가고싶어요",
+    "예: 유럽을 가고싶어요, 여행가면 야경보는걸 즐겨합니다.",
+    "예: 저는 여행을 다닐때 걷는걸 좋아합니다. 조용한 거리나 공원을 즐깁니다",
   ];
   const [examplesIdx, setExamplesIdx] = useState(0);
 
@@ -53,7 +53,7 @@ export default function GiftTripPages02() {
       {/* 헤더 */}
       <header className="CommonHeader">
         <div className="CommonLogo CommonLogo_Left">Gift Trip</div>
-        <button className="CommonLoginBtn" type="button">로그인</button>
+        {/*<button className="CommonLoginBtn">로그인</button>*/}
       </header>
 
       {/* 본문 카드 */}

@@ -117,7 +117,7 @@ export default function GiftTripPages00() {
     <div className="CommonPage">
       <header className="CommonHeader">
         <h1 className="CommonLogo CommonLogo_Middle">Gift Trip</h1>
-        <button className="CommonLoginBtn">로그인</button>
+        {/*<button className="CommonLoginBtn">로그인</button>*/}
       </header>
 
       <main className="Page00_Main">

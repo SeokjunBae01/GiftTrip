@@ -9,13 +9,14 @@ const categories = ["도시", "액티비티", "음식", "인기 스팟"];
 const sortOptions = ["인기순", "평점순"];
 
 const korToEng = {
-  "도시": "Stay",
-  "액티비티": "Activity",
-  "음식": "Food",
+  도시: "Stay",
+  액티비티: "Activity",
+  음식: "Food",
   "인기 스팟": "Spots",
 };
 
 const SESSION_KEY = "gt.selectedCode";
+const normCode = (s) => (s || "").toUpperCase();
 
 // ✅ 파일명 파싱: "제목-내용.확장자" → {title, desc}
 function parseTitleAndDesc(url) {
@@ -41,19 +42,25 @@ export default function MySelectionsPage() {
   const selectedCodeFromState = location.state?.selectedCode || null;
 
   const sessionCode = (() => {
-    try { return sessionStorage.getItem(SESSION_KEY); } catch { return null; }
+    try {
+      return sessionStorage.getItem(SESSION_KEY);
+    } catch {
+      return null;
+    }
   })();
 
-  // 🇯🇵 최종 국가 코드 결정
+  // 🇯🇵 최종 국가 코드 결정(+대문자 정규화)
   const effectiveCode = useMemo(
-    () => selectedCodeFromState || sessionCode || countryCode || "",
+    () => normCode(selectedCodeFromState || sessionCode || countryCode || ""),
     [selectedCodeFromState, sessionCode, countryCode]
   );
 
   // 세션에 최신 코드 백업
   useEffect(() => {
     if (effectiveCode) {
-      try { sessionStorage.setItem(SESSION_KEY, effectiveCode); } catch {}
+      try {
+        sessionStorage.setItem(SESSION_KEY, effectiveCode);
+      } catch {}
     }
   }, [effectiveCode]);
 
@@ -67,10 +74,12 @@ export default function MySelectionsPage() {
   const [tagline, setTagline] = useState("");
   const taglineFrozenRef = useRef(false);
 
-  // 국가 코드 바뀌면 문장 초기화(새 국가에서만 재생성)
+  // 국가 코드 바뀌면 문장 초기화(새 국가에서만 재생성), 리스트도 초기화
   useEffect(() => {
     taglineFrozenRef.current = false;
     setTagline("");
+    setItems([]); // 다른 나라로 바뀔 때 이전 나라의 선택 잔상 제거
+    setSelectedItems([]);
   }, [effectiveCode]);
 
   // 🔄 좋아요 목록 로드 (카테고리/정렬 바뀔 때 재조회 OK)
@@ -84,15 +93,30 @@ export default function MySelectionsPage() {
         const params = new URLSearchParams();
         if (effectiveCode) params.set("countryCode", effectiveCode);
 
-        const categoryKey = korToEng[selectedCategory];
+        const categoryKey = korToEng[selectedCategory]; // Stay/Activity/Food/Spots
         if (categoryKey) params.set("categoryKey", categoryKey);
         params.set("sort", selectedSort === "인기순" ? "popular" : "recent");
 
         const url = `http://localhost:3000/api/page6/selections?${params.toString()}`;
+        console.log("[Page06] fetch selections:", {
+          url,
+          effectiveCode,
+          selectedCategory,
+          categoryKey,
+          selectedSort,
+        });
+
         const res = await fetch(url);
         if (!res.ok) throw new Error(`API 실패: ${res.status}`);
         const data = await res.json();
-        if (!ignore) setItems(data.items || []);
+
+        if (!ignore) {
+          console.log("[Page06] selections resp:", {
+            count: data?.count,
+            sample: data?.items?.[0],
+          });
+          setItems(data.items || []);
+        }
       } catch (e) {
         console.error("[Page06] load error:", e);
         if (!ignore) setError("목록을 불러오지 못했습니다.");
@@ -100,14 +124,26 @@ export default function MySelectionsPage() {
     };
 
     if (effectiveCode) load();
+    else console.warn("[Page06] no effectiveCode yet");
 
-    return () => { ignore = true; };
+    return () => {
+      ignore = true;
+    };
   }, [effectiveCode, selectedCategory, selectedSort]);
 
-  // 탭 필터
+  // ✅ 키 기반 탭 필터 (명칭 불일치 이슈 제거)
+  const selectedKey = useMemo(() => korToEng[selectedCategory], [selectedCategory]);
   const filtered = useMemo(() => {
-    return items.filter(it => it.type === selectedCategory);
-  }, [items, selectedCategory]);
+    const out = items.filter((it) => it.categoryKey === selectedKey);
+    // 디버그: 탭/필터 결과
+    console.log("[Page06] filtered", {
+      selectedCategory,
+      selectedKey,
+      total: items.length,
+      filtered: out.length,
+    });
+    return out;
+  }, [items, selectedKey, selectedCategory]);
 
   // ✅ 상단 도시 설명(첫 이미지의 “내용” 부분)
   const headerDesc = useMemo(() => {
@@ -117,45 +153,54 @@ export default function MySelectionsPage() {
     return desc;
   }, [filtered, items]);
 
-  // ✅ 추천 문장: effectiveCode 바뀔 때 '최초 1회'만 로드 (카테고리 변화 무시)
+  // ✅ 추천 문장: effectiveCode 바뀔 때 '최초 1회'만 로드
   useEffect(() => {
     let ignore = false;
 
     async function loadTaglineOnce() {
       if (!effectiveCode) return;
-      if (taglineFrozenRef.current) return; // 이미 고정되었으면 스킵
+      if (taglineFrozenRef.current) return;
 
       try {
         const params = new URLSearchParams({ countryCode: effectiveCode });
-        const res = await fetch(`http://localhost:3000/api/page6/tagline?${params.toString()}`);
+        const url = `http://localhost:3000/api/page6/tagline?${params.toString()}`;
+        console.log("[Page06] fetch tagline:", { url, effectiveCode });
+
+        const res = await fetch(url);
         if (!res.ok) throw new Error(`tagline API ${res.status}`);
         const data = await res.json();
+
         if (!ignore && data.success) {
+          console.log("[Page06] tagline resp:", data);
           setTagline(data.tagline || "");
           taglineFrozenRef.current = true; // 🔒 고정
         }
       } catch (e) {
         console.error("[Page06] tagline error:", e);
         if (!ignore) {
-          setTagline("");              // 표시는 생략(원하면 폴백 문장 넣기 가능)
-          taglineFrozenRef.current = true; // 실패했어도 탭 전환마다 재시도하지 않음
+          setTagline("");
+          taglineFrozenRef.current = true;
         }
       }
     }
 
     loadTaglineOnce();
-    return () => { ignore = true; };
-  }, [effectiveCode]); // ❗카테고리/정렬/아이템 의존성 넣지 말기
+    return () => {
+      ignore = true;
+    };
+  }, [effectiveCode]);
 
   const handleCardClick = (itemId) => {
-    setSelectedItems(prev =>
-      prev.includes(itemId)
-        ? prev.filter(id => id !== itemId)
-        : [...prev, itemId]
+    setSelectedItems((prev) =>
+      prev.includes(itemId) ? prev.filter((id) => id !== itemId) : [...prev, itemId]
     );
   };
 
   const handleCreate = () => {
+    if (!selectedItems.length) {
+      alert("선택한 항목이 없습니다.");
+      return;
+    }
     navigate("/page7", { state: { selectedItemIds: selectedItems, selectedCode: effectiveCode } });
   };
 
@@ -163,24 +208,20 @@ export default function MySelectionsPage() {
     <div className="CommonPage">
       <header className="CommonHeader">
         <h1 className="CommonLogo CommonLogo_Left">Gift Trip</h1>
-        <button className="CommonLoginBtn">로그인</button>
+        {/*<button className="CommonLoginBtn">로그인</button>*/}
       </header>
 
       <main className="Page06_Main">
         <h2 className="Page06_Title">나의 선택</h2>
-        {/* ✅ 추천 문장: 카테고리 바꿔도 그대로 유지 */}
+
         {tagline && (
-          <p className="Page06_Subtitle" style={{ marginTop: 4, opacity: 0.8 }}>
-            {tagline}
+          <p
+            className="Page06_Subtitle"
+            style={{ marginTop: 4, opacity: 0.8, whiteSpace: "pre-line" }}
+          >
+            {tagline.replace(/#/g, "\n")}
           </p>
         )}
-        {/* (옵션) 도시 설명이 있으면 표시하고 싶다면 아래 주석 해제
-        {headerDesc && (
-          <p className="Page06_Subtitle" style={{ marginTop: 2, opacity: 0.7 }}>
-            {headerDesc}
-          </p>
-        )}
-        */}
 
         <div className="Page06_CategoryTabs">
           {categories.map((category) => (
@@ -194,17 +235,7 @@ export default function MySelectionsPage() {
           ))}
         </div>
 
-        <div className="Page06_SortContainer">
-          {sortOptions.map((option) => (
-            <button
-              key={option}
-              className={`Page06_SortBtn ${selectedSort === option ? "btn-bold" : ""}`}
-              onClick={() => setSelectedSort(option)}
-            >
-              {option}
-            </button>
-          ))}
-        </div>
+       
 
         {error && <p style={{ color: "tomato" }}>{error}</p>}
 
@@ -226,7 +257,10 @@ export default function MySelectionsPage() {
                       className="Page06_CardImage"
                       src={selection.imageUrl}
                       alt={title}
-                      onError={(e) => { e.currentTarget.style.display = "none"; }}
+                      onError={(e) => {
+                        console.warn("[Page06] image error:", selection.imageUrl);
+                        e.currentTarget.style.display = "none";
+                      }}
                     />
                   ) : (
                     <div className="Page06_CardImageWrapper">
@@ -234,7 +268,9 @@ export default function MySelectionsPage() {
                         className="Page06_CardImage"
                         src={selection.imageUrl || "https://via.placeholder.com/480x640?text=No+Image"}
                         alt={title}
-                        onError={(e) => { e.currentTarget.src = "https://via.placeholder.com/480x640?text=No+Image"; }}
+                        onError={(e) => {
+                          e.currentTarget.src = "https://via.placeholder.com/480x640?text=No+Image";
+                        }}
                       />
                     </div>
                   )}
@@ -248,7 +284,14 @@ export default function MySelectionsPage() {
               );
             })
           ) : (
-            <p>선택된 항목이 없습니다.</p>
+            <p style={{ opacity: 0.8 }}>
+              선택된 항목이 없습니다.
+              <br />
+              <small>
+                (debug) code={effectiveCode || "(none)"}, tab={selectedCategory}({selectedKey}), total=
+                {items.length}
+              </small>
+            </p>
           )}
         </div>
 

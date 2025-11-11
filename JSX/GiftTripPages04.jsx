@@ -5,24 +5,42 @@ import { useAppData } from "../JSX/Data.jsx";
 import "../CSS/GiftTripPages04.css";
 import "../CSS/Common.css";
 
+const SESSION_KEY = "gt.selectedCode"; // ✅ 추가
+
 export default function GiftTripPages04() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Page00 또는 이전 페이지에서 전달받은 코드 우선
+  // Page00/03/05 등에서 전달받은 코드가 있으면 최우선
   const codeFromState = location.state?.selectedCode;
 
   // Context: { loading, countryCode, categories: [{key,name}] }
   const { loading, countryCode, categories } = useAppData();
 
-  const [thumbnails, setThumbnails] = useState({}); // { [key]: url|null }
-  const [completed, setCompleted] = useState([]);   // ["도시","액티비티","음식","인기스팟"]
+  const [thumbnails, setThumbnails] = useState({});
+  const [completed, setCompleted] = useState([]);
 
-  // ✅ 최상위에서만 훅 호출: 유효 국가코드
+  // ✅ 세션 코드 읽기
+  const sessionCode = (() => {
+    try {
+      return sessionStorage.getItem(SESSION_KEY) || "";
+    } catch {
+      return "";
+    }
+  })();
+
+  // ✅ 유효 국가코드: state ▶ 세션 ▶ 컨텍스트
   const effectiveCode = useMemo(
-    () => codeFromState || countryCode,
-    [codeFromState, countryCode]
+    () => codeFromState || sessionCode || countryCode || "",
+    [codeFromState, sessionCode, countryCode]
   );
+
+  // (옵션) state로 코드가 들어온 경우 세션에도 백업
+  useEffect(() => {
+    if (codeFromState) {
+      try { sessionStorage.setItem(SESSION_KEY, codeFromState); } catch {}
+    }
+  }, [codeFromState]);
 
   // 완료 상태 로드
   useEffect(() => {
@@ -40,16 +58,15 @@ export default function GiftTripPages04() {
     return () => window.removeEventListener("focus", onFocus);
   }, [location.key]);
 
-  // ✅ Page04: 진입 시 자동 초기화 (0→4, 3→4는 초기화 / 5→4, reload는 스킵)
+  // ✅ Page04 진입시 초기화 규칙(종전 로직 그대로)
   useEffect(() => {
     const nav = performance.getEntriesByType?.("navigation")?.[0];
     const isReload = nav && nav.type === "reload";
-    if (isReload) return; // 새로고침은 유지
+    if (isReload) return;
 
     const fromState = location.state?.from;
     const fromPage5Flag = sessionStorage.getItem("gt.fromPage5") === "1";
 
-    // 1) page0/page3에서 왔으면 항상 초기화 (플래그 잔여 무시)
     if (fromState === "page0" || fromState === "page3") {
       sessionStorage.removeItem("gt.fromPage5");
       (async () => {
@@ -65,13 +82,11 @@ export default function GiftTripPages04() {
       return;
     }
 
-    // 2) 5→4 복귀면 초기화 스킵
     if (fromState === "page5" || fromPage5Flag) {
-      sessionStorage.removeItem("gt.fromPage5"); // 일회성 플래그 정리
+      sessionStorage.removeItem("gt.fromPage5");
       return;
     }
 
-    // 3) 그 외 진입(예: 직접 이동 등)에는 기본 초기화
     (async () => {
       try {
         localStorage.removeItem("completedCategories");
@@ -81,7 +96,6 @@ export default function GiftTripPages04() {
       } catch (e) {
         console.warn("[Page04] 초기화 중 오류(무시 가능)", e);
       } finally {
-        // 혹시 남아있을 수 있는 플래그 정리
         sessionStorage.removeItem("gt.fromPage5");
       }
     })();
@@ -99,7 +113,7 @@ export default function GiftTripPages04() {
           const url = `http://localhost:3000/api/page4/pictures/${effectiveCode}/${key}`;
           const res = await fetch(url);
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
-          const data = await res.json(); // { success, country, category, pictures: [...] }
+          const data = await res.json();
           newThumbs[key] = data.pictures?.[0] || null;
         } catch (e) {
           console.error(`${name} 썸네일 불러오기 실패`, e);
@@ -112,33 +126,31 @@ export default function GiftTripPages04() {
     fetchThumbnails();
   }, [loading, categories, effectiveCode]);
 
-  // 전부 완료?
   const allDone = useMemo(() => {
     if (!categories || categories.length === 0) return false;
-    const done = new Set(completed); // 이름(name) 기준 저장 가정
+    const done = new Set(completed);
     return categories.every(({ name }) => done.has(name));
   }, [categories, completed]);
 
-  // 카테고리 시작 버튼
   const handleStart = (name, index) => {
     navigate("/page5", {
       state: {
         categoryIndex: index,
         categoryName: name,
-        selectedCode: effectiveCode, // ✅ 최신 코드 함께 전달
+        selectedCode: effectiveCode, // ✅ 세션 기반 코드 유지
       },
     });
   };
 
   const handleNext = () => {
-    navigate("/page6", { state: { from: "page4", selectedCode: effectiveCode } });
+    navigate("/page6", { state: { from: "page4", selectedCode: effectiveCode } }); // ✅ JP 그대로 전달
   };
 
   return (
     <div className="CommonPage">
       <header className="CommonHeader">
         <h1 className="CommonLogo Page04_Logo">Gift Trip</h1>
-        <button className="CommonLoginBtn">로그인</button>
+        {/*<button className="CommonLoginBtn">로그인</button>*/}
       </header>
 
       <main className="Page04_Main">
@@ -178,7 +190,6 @@ export default function GiftTripPages04() {
         )}
       </main>
 
-      {/* ✅ 전부 완료 시 바텀 CTA */}
       {allDone && (
         <div className="Page04_FooterCTA">
           <button className="btn primary Page04_NextBtn" onClick={handleNext}>

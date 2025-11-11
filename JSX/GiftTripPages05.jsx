@@ -8,46 +8,28 @@ import "../CSS/Common.css";
 export default function GiftTripPages05() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { countryCode, loading } = useAppData(); // JP/KR 등 (컨텍스트)
+  const { countryCode, loading } = useAppData();
 
-  // Page04에서 넘어온 값
   const { categoryName, selectedCode } = location.state || {};
-
-  // 한→영 매핑 (폴더/카테고리 키와 정확히 일치)
   const apiCategoryKey = useMemo(() => {
-    const map = { 도시: "Stay", 액티비티: "Activity", 음식: "Food", 인기스팟: "Spots" };
+    const map = { 도시: "Stay", 액티비티: "Activity", 음식: "Food", 인기스팟: "Spots", "인기 스팟": "Spots" };
     return map[categoryName] || categoryName || "";
   }, [categoryName]);
+  const effectiveCode = useMemo(() => selectedCode || countryCode, [selectedCode, countryCode]);
 
-  // ✅ 국가코드 결정: state 우선, 없으면 context
-  const effectiveCode = useMemo(
-    () => selectedCode || countryCode,
-    [selectedCode, countryCode]
-  );
-
-  const [pictures, setPictures] = useState([]); // 이미지 배열(URL)
+  const [pictures, setPictures] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [errorMsg, setErrorMsg] = useState("");
-
-  // 이미지 제목 상태
   const [imageTitle, setImageTitle] = useState("");
-  const [imageDesc, setImageDesc] = useState(""); // (필요시 확장 가능, 지금은 표시 안 함)
-
-  // 리뷰 상태
   const [goodReviews, setGoodReviews] = useState([]);
   const [badReviews, setBadReviews] = useState([]);
   const [reviewLoading, setReviewLoading] = useState(false);
 
-  /* --------------------- 🔒 프론트 리뷰 캐시 --------------------- */
+  // ---------------- 캐시 관리 ----------------
   const REV_CACHE_KEY = "gt.reviewCache.v1";
-  const REV_TTL_MS = 30 * 24 * 60 * 60 * 1000; // 30일 (필요 없으면 0)
-
-  const stripQuery = (url = "") => {
-    try { return url.split("?")[0]; } catch { return url || ""; }
-  };
-  const cacheKeyOf = (code, cat, url) =>
-    `${code || ""}|${cat || ""}|${stripQuery(url || "")}`;
-
+  const REV_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+  const stripQuery = (url = "") => (url.split("?")[0] || "");
+  const cacheKeyOf = (code, cat, url) => `${code || ""}|${cat || ""}|${stripQuery(url || "")}`;
   const readReviewCache = () => {
     try { return JSON.parse(localStorage.getItem(REV_CACHE_KEY)) || {}; }
     catch { return {}; }
@@ -60,216 +42,148 @@ export default function GiftTripPages05() {
     const key = cacheKeyOf(code, cat, url);
     const v = map[key];
     if (!v) return null;
-    if (REV_TTL_MS > 0 && Date.now() - (v.ts || 0) > REV_TTL_MS) return null; // 만료
+    if (REV_TTL_MS > 0 && Date.now() - (v.ts || 0) > REV_TTL_MS) return null;
     return v;
   };
-  const setCachedReview = (code, cat, url, payload) => {
+  const setCachedReview = (code, cat, url, positives, negatives) => {
     const map = readReviewCache();
     const key = cacheKeyOf(code, cat, url);
-    map[key] = { ...payload, ts: Date.now() };
+    map[key] = { positives, negatives, ts: Date.now() };
     writeReviewCache(map);
   };
-  /* ------------------------------------------------------------ */
 
-  // 필수 파라미터 없으면 되돌리기
+  // ---------------- 파일명 파싱 ----------------
+  const stripCountryPrefix = (s = "") =>
+    s.replace(/^\s*[\[\(]?[A-Z]{2,3}[\]\)]?\s*[-_.·]?\s*/i, "").trim();
+
+  const titleFromUrl = (url = "") => {
+    try {
+      const fileName = url.split("/").pop().split("?")[0];
+      const decoded = decodeURIComponent(fileName);
+      const noExt = decoded.replace(/\.[^/.]+$/, "");
+      const cleaned = stripCountryPrefix(noExt);
+      const idx = cleaned.search(/[-–—]/);
+      return (idx === -1 ? cleaned : cleaned.slice(0, idx)).trim();
+    } catch {
+      return "";
+    }
+  };
+
+  // ---------------- 기본 로직 ----------------
   useEffect(() => {
     if (!loading && !categoryName) navigate("/page4");
   }, [loading, categoryName, navigate]);
 
-  // 이미지 배열 불러오기 (UpLoadingImages 엔드포인트 사용)
   useEffect(() => {
     if (loading) return;
-    if (!effectiveCode) {
-      setErrorMsg("국가 코드를 불러오지 못했습니다.");
-      return;
-    }
-    if (!apiCategoryKey) {
-      setErrorMsg("카테고리 정보가 없습니다.");
-      return;
-    }
+    if (!effectiveCode || !apiCategoryKey) return;
 
     const ctrl = new AbortController();
-
     (async () => {
       try {
-        setErrorMsg("");
-        const url = `http://localhost:3000/api/page4/pictures/${effectiveCode}/${apiCategoryKey}`;
-        console.log("[Page05] fetch:", url);
-        const res = await fetch(url, { signal: ctrl.signal });
-        if (!res.ok) throw new Error(`이미지 API 실패: ${res.status}`);
-        const data = await res.json(); // { success, country, category, pictures: [...] }
+        const res = await fetch(`http://localhost:3000/api/page4/pictures/${effectiveCode}/${apiCategoryKey}`, { signal: ctrl.signal });
+        if (!res.ok) throw new Error("이미지 로드 실패");
+        const data = await res.json();
         const imgs = data.pictures || [];
         setPictures(imgs);
         setCurrentIndex(0);
-
-        if (imgs.length === 0) {
-          setErrorMsg("이미지가 없습니다.");
-        }
-      } catch (err) {
-        if (err.name !== "AbortError") {
-          console.error("[Page05] 이미지 로드 실패:", err);
+        if (!imgs.length) setErrorMsg("이미지가 없습니다.");
+      } catch (e) {
+        if (e.name !== "AbortError") {
           setErrorMsg("이미지를 불러오지 못했습니다.");
-          setPictures([]);
+          console.error(e);
         }
       }
     })();
-
     return () => ctrl.abort();
-  }, [loading, effectiveCode, apiCategoryKey]); // ✅ countryCode → effectiveCode
+  }, [loading, effectiveCode, apiCategoryKey]);
 
-  // ✅ 현재 이미지 파일명 → 제목 추출(확장자 제거, _,- 를 공백으로)
+  // ---------------- 제목 갱신 ----------------
   useEffect(() => {
-    if (!pictures.length) {
-      setImageTitle("");
-      setImageDesc("");
-      return;
-    }
-    const url = pictures[currentIndex];
-    if (!url) return;
-
-    try {
-      const decoded = decodeURIComponent(url);
-      const base = (decoded.split("/").pop() || "").split("?")[0];
-      const noExt = base.replace(/\.[^/.]+$/, ""); // 확장자 제거
-      const [rawTitle, ...rest] = noExt.split("-");
-      const title = (rawTitle || "").trim();
-      const desc = (rest.join("-") || "").trim(); // '-'가 여러개여도 뒤쪽 전부 설명으로
-
-      setImageTitle(title);   // ✅ 제목만 노출
-      setImageDesc(desc);     // (지금은 미노출)
-    } catch {
-      setImageTitle("");
-      setImageDesc("");
-    }
+    if (!pictures.length) return;
+    const current = pictures[currentIndex];
+    setImageTitle(titleFromUrl(current));
   }, [pictures, currentIndex]);
 
-  // 현재 이미지가 바뀔 때 리뷰 조회 (⚡ 캐시 선조회)
+  // ---------------- 리뷰 로드 ----------------
   useEffect(() => {
-    if (!pictures.length) {
-      setGoodReviews([]);
-      setBadReviews([]);
-      return;
-    }
+    if (!pictures.length) return;
     const img = pictures[currentIndex];
     if (!img) return;
 
     const ctrl = new AbortController();
-
     (async () => {
       try {
         setReviewLoading(true);
-
-        // ① 프론트 캐시 HIT이면 즉시 사용하고 서버 호출 스킵
         const cached = getCachedReview(effectiveCode, apiCategoryKey, img);
         if (cached) {
           setGoodReviews(cached.positives || []);
           setBadReviews(cached.negatives || []);
-          // 서버 포맷의 title이 있으면 오버레이도 동기화
-          if (cached.title) setImageTitle((t) => cached.title || t);
           setReviewLoading(false);
           return;
         }
 
-        // ② 캐시 MISS → 서버 호출
         const res = await fetch("http://localhost:3000/api/page5/reviews", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            imageUrl: img,
-            countryCode: effectiveCode,   // ✅ 여기도 effectiveCode
-            categoryKey: apiCategoryKey,
-          }),
+          body: JSON.stringify({ imageUrl: img, countryCode: effectiveCode, categoryKey: apiCategoryKey }),
           signal: ctrl.signal,
         });
-        if (!res.ok) throw new Error(`리뷰 API 실패: ${res.status}`);
-        const data = await res.json(); // { success, title, positives, negatives, ... }
-        if (!data.success) throw new Error("리뷰 조회 실패");
+        if (!res.ok) throw new Error("리뷰 API 실패");
+        const data = await res.json();
+        if (!data.success) throw new Error("리뷰 실패");
 
         setGoodReviews(data.positives || []);
         setBadReviews(data.negatives || []);
-
-        // ③ 성공 시 프론트 캐시에 저장
-        setCachedReview(effectiveCode, apiCategoryKey, img, {
-          title: data.title,
-          positives: data.positives,
-          negatives: data.negatives,
-        });
+        setCachedReview(effectiveCode, apiCategoryKey, img, data.positives, data.negatives);
       } catch (e) {
         if (e.name !== "AbortError") {
-          console.error("[Page05] 리뷰 불러오기 실패:", e);
           setGoodReviews([]);
           setBadReviews([]);
+          console.error(e);
         }
       } finally {
         setReviewLoading(false);
       }
     })();
-
     return () => ctrl.abort();
   }, [pictures, currentIndex, effectiveCode, apiCategoryKey]);
 
-  // 완료 상태 저장
+  // ---------------- 버튼 동작 ----------------
   const markCompleted = () => {
     const prev = JSON.parse(localStorage.getItem("completedCategories")) || [];
     const next = Array.from(new Set([...prev, categoryName].filter(Boolean)));
     localStorage.setItem("completedCategories", JSON.stringify(next));
   };
-
-  // ✅ 진행 공통
   const advance = () => {
-    if (currentIndex < pictures.length - 1) {
-      setCurrentIndex((prev) => prev + 1);
-    } else {
-      // ✅ 카테고리 완료 저장
+    if (currentIndex < pictures.length - 1) setCurrentIndex((p) => p + 1);
+    else {
       markCompleted();
-
-      // ✅ 5→4 복귀 플래그 설정 (초기화 방지용)
       sessionStorage.setItem("gt.fromPage5", "1");
-
-      // ✅ Page04로 이동 (state에 from도 함께 전달)
-      navigate("/page4", {
-        state: { from: "page5", selectedCode: effectiveCode },
-      });
+      navigate("/page4", { state: { from: "page5", selectedCode: effectiveCode } });
     }
   };
-
   const sendVerdict = async (verdict) => {
-    const payload = {
-      countryCode: effectiveCode,        // ✅ 여기도 effectiveCode
-      categoryKey: apiCategoryKey,       // "Stay" | "Activity" | ...
-      imageUrl: pictures[currentIndex],
-    };
-
     const res = await fetch(`http://localhost:3000/api/page5/${verdict}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
+      body: JSON.stringify({
+        countryCode: effectiveCode,
+        categoryKey: apiCategoryKey,
+        imageUrl: pictures[currentIndex],
+      }),
     });
-
-    if (!res.ok) throw new Error(`API 실패: ${res.status}`);
+    if (!res.ok) throw new Error("API 실패");
     return res.json();
   };
-
   const handleLike = async () => {
-    try {
-      await sendVerdict("like");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      advance(); // 다음 이미지로
-    }
+    try { await sendVerdict("like"); } catch (e) { console.error(e); } finally { advance(); }
   };
-
   const handleDislike = async () => {
-    try {
-      await sendVerdict("dislike");
-    } catch (e) {
-      console.error(e);
-    } finally {
-      advance();
-    }
+    try { await sendVerdict("dislike"); } catch (e) { console.error(e); } finally { advance(); }
   };
 
+  // ---------------- 렌더 ----------------
   return (
     <div className="CommonPage">
       <header className="CommonHeader">
@@ -371,4 +285,3 @@ export default function GiftTripPages05() {
     </div>
   );
 }
-
