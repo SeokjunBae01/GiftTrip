@@ -6,19 +6,28 @@
 const sessionData = {
     countryName: "일본",
     countryCode: "JP",
-    questions: ["해변에 있는 휴양지를 원하시나요?","산이나 자연을 즐기고 싶으신가요?","액티비티(스포츠, 레저)를 좋아하시나요?",
-  "도시 관광을 선호하시나요?",
-  "맛집 탐방을 중요하게 생각하시나요?",
-  "역사적 유적지를 좋아하시나요?",
-  "쇼핑을 즐기시나요?",
-  "야경과 야경 명소를 좋아하시나요?",
-  "온천이나 휴식을 중요하게 생각하시나요?",
-  "혼자보다는 사람 많은 곳을 선호하시나요?"],
-    questionAnswers: ["yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes", "yes"],
+    questions: [  "영어가 공용어인 여행지를 선호하시나요?",
+                  "높은 빌딩과 스카이라인이 아름다운 야경이 있는 대도시 여행을 좋아하시나요?",
+                  "해변과 따뜻한 햇살이 있는 지중해 인근 휴양지를 좋아하시나요?",
+                  "박물관을 방문해 서양 예술 작품이나 역사 전시를 감상하는 것을 즐기시나요?",
+                  "중화권 국가 여행에 관심이 있으신가요?",
+                  "조용하고 자연이 중심인 평온한 여행을 원하시나요?",
+                  "현지 음식과 디저트를 탐방하는 미식 여행을 즐기시나요?",
+                  "고대 로마 유적이나 르네상스 예술에 특히 관심이 있으신가요?",
+                  "비교적 넓은 면적의 나라에서 다채로운 여행을 즐기고 싶으신가요?",
+                  "쇼핑거리나 브랜드 매장을 둘러보는 걸 즐기시나요?",
+                  "넓은 자연과 다양한 기후 속에서 여러 지역을 탐험하며 여행하는 것을 좋아하시나요?",
+                  "비행 시간이 길지 않은 아시아 여행지를 선호하시나요?",
+                  "고성이나 중세도시 같은 고전적인 유럽 감성을 느끼고 싶으신가요?",
+                  "교회나 성당 같은 종교 건축물에 흥미가 있으신가요?",
+                  "혼자 떠나는 여행을 선호하시나요?",
+                  "계획을 꼼꼼하고 철저하게 세우고 따르는 것을 좋아하시나요?"
+                ],
+    questionAnswers: [""],
     request: "",
     recommendation: {
-        typeSummary: "도보 이동과 미식 탐방을 즐기는 타입이에요.",
-        tags: ["미식", "도시", "야경"]
+        typeSummary: "",
+        tags: [""]
     },
     categoryProgress: {
         "도시": false,
@@ -82,7 +91,7 @@ const saveCountryData = (countryName, countryCode) => {
  * 질문 답변 저장
  */
 const saveQuestionAnswers = (questionAnswers) => {
-    if (questionAnswers && Array.isArray(questionAnswers) && questionAnswers.length === 10) {
+    if (questionAnswers && Array.isArray(questionAnswers) && questionAnswers.length === 16) {
         setData('questionAnswers', questionAnswers);
         return true;
     }

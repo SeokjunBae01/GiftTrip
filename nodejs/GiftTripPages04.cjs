@@ -23,6 +23,4 @@ router.get("/start/:index", (req, res) => {
   });
 });
 
-// ⚠️ 여기엔 더 이상 /page4/pictures 라우트가 없습니다 (UpLoadingImages가 담당)
-
 module.exports = router;
