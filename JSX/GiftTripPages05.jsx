@@ -303,8 +303,11 @@ export default function GiftTripPages05() {
           ) : (
             <p>이미지가 없습니다.</p>
           )}
+          </section>
 
-          <div className="Page05_Action">
+          <div className="Page05_ActionReviewWrapper">
+          {/* 1. 좋아요 + 굿 리뷰 */}
+          <div className="Page05_ActionColumn">
             <button
               className="CommonFrame Page05_BtnLike"
               onClick={handleLike}
@@ -312,47 +315,47 @@ export default function GiftTripPages05() {
             >
               좋아요
             </button>
+            <div className="Page05_ReviewBox">
+              <span className="Page05_ReviewBoxTitle">good reviews</span>
+              {reviewLoading ? (
+                <p className="Page05_ReviewDesc">불러오는 중...</p>
+              ) : goodReviews.length ? (
+                <ul className="Page05_ReviewList">
+                  {goodReviews.map((t, i) => (
+                    <li key={`g${i}`}>{t}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="Page05_ReviewDesc">긍정 리뷰가 아직 없어요.</p>
+              )}
+            </div>
+          </div>
+
+          {/* 2. 싫어요 + 배드 리뷰 */}
+          <div className="Page05_ActionColumn">
             <button
               className="CommonFrame Page05_BtnDisLike"
               onClick={handleDislike}
               disabled={!pictures.length}
-            >
+            t >
               싫어요
             </button>
+            <div className="Page05_ReviewBox">
+              <span className="Page05_ReviewBoxTitle">bad reviews</span>
+              {reviewLoading ? (
+                <p className="Page05_ReviewDesc">불러오는 중...</p>
+              ) : badReviews.length ? (
+                <ul className="Page05_ReviewList">
+                  {badReviews.map((t, i) => (
+                    <li key={`b${i}`}>{t}</li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="Page05_ReviewDesc">부정 리뷰가 아직 없어요.</p>
+              )}
+            </div>
           </div>
-        </section>
-
-        <aside className="Page05_Review">
-          <div className="Page05_ReviewBox">
-            <span className="Page05_ReviewBoxTitle">good reviews</span>
-            {reviewLoading ? (
-              <p className="Page05_ReviewDesc">불러오는 중...</p>
-            ) : goodReviews.length ? (
-              <ul className="Page05_ReviewList">
-                {goodReviews.map((t, i) => (
-                  <li key={`g${i}`}>{t}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="Page05_ReviewDesc">긍정 리뷰가 아직 없어요.</p>
-            )}
-          </div>
-
-          <div className="Page05_ReviewBox">
-            <span className="Page05_ReviewBoxTitle">bad reviews</span>
-            {reviewLoading ? (
-              <p className="Page05_ReviewDesc">불러오는 중...</p>
-            ) : badReviews.length ? (
-              <ul className="Page05_ReviewList">
-                {badReviews.map((t, i) => (
-                  <li key={`b${i}`}>{t}</li>
-                ))}
-              </ul>
-            ) : (
-              <p className="Page05_ReviewDesc">부정 리뷰가 아직 없어요.</p>
-            )}
-          </div>
-        </aside>
+        </div>
       </main>
 
       <footer className="Page05_Footer">
@@ -368,3 +371,4 @@ export default function GiftTripPages05() {
     </div>
   );
 }
+
